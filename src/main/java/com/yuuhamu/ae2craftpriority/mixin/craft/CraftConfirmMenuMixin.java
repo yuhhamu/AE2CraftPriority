@@ -1,4 +1,4 @@
-package com.yuuhamu.ae2craftpriority.mixin;
+package com.yuuhamu.ae2craftpriority.mixin.craft;
 
 import com.yuuhamu.ae2craftpriority.menu.CraftPriorityStepMenu;
 import com.yuuhamu.ae2craftpriority.priority.PendingCraftPriority;

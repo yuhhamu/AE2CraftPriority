@@ -1,4 +1,4 @@
-package com.yuuhamu.ae2craftpriority.mixin;
+package com.yuuhamu.ae2craftpriority.mixin.status;
 
 import com.yuuhamu.ae2craftpriority.api.CraftPriorityApi;
 import com.yuuhamu.ae2craftpriority.client.PriorityBackIconOverride;

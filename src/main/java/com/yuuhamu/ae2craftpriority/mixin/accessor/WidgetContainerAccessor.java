@@ -1,4 +1,4 @@
-package com.yuuhamu.ae2craftpriority.mixin;
+package com.yuuhamu.ae2craftpriority.mixin.accessor;
 
 import java.util.Map;
 

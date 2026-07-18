@@ -1,4 +1,4 @@
-package com.yuuhamu.ae2craftpriority.mixin;
+package com.yuuhamu.ae2craftpriority.mixin.accessor;
 
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;

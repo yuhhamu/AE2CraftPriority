@@ -1,4 +1,4 @@
-package com.yuuhamu.ae2craftpriority.mixin;
+package com.yuuhamu.ae2craftpriority.mixin.core;
 
 import com.yuuhamu.ae2craftpriority.priority.PriorityHolder;
 import net.minecraft.nbt.CompoundTag;

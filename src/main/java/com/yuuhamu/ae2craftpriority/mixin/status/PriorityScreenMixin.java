@@ -1,6 +1,8 @@
-package com.yuuhamu.ae2craftpriority.mixin;
+package com.yuuhamu.ae2craftpriority.mixin.status;
 
 import com.yuuhamu.ae2craftpriority.client.PriorityBackIconOverride;
+import com.yuuhamu.ae2craftpriority.mixin.accessor.TabButtonAccessor;
+import com.yuuhamu.ae2craftpriority.mixin.accessor.WidgetContainerAccessor;
 import com.yuuhamu.ae2craftpriority.priority.CraftingPriorityHostMarker;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;

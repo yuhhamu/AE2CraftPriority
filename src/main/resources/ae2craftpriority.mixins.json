@@ -5,20 +5,20 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "ae2craftpriority.refmap.json",
   "mixins": [
-    "CraftAmountMenuMixin",
-    "CraftConfirmMenuMixin",
-    "CraftingBlockEntityMixin",
-    "CraftingCPUMenuMixin",
-    "CraftingStatusMenuMixin",
-    "CraftingCPUClusterMixin",
-    "CraftingServiceMixin",
-    "CraftingCpuLogicMixin"
+    "core.CraftingBlockEntityMixin",
+    "core.CraftingCPUClusterMixin",
+    "core.CraftingCPUMenuMixin",
+    "core.CraftingCpuLogicMixin",
+    "core.CraftingServiceMixin",
+    "craft.CraftAmountMenuMixin",
+    "craft.CraftConfirmMenuMixin",
+    "status.CraftingStatusMenuMixin"
   ],
   "client": [
-    "CraftingCPUScreenMixin",
-    "PriorityScreenMixin",
-    "TabButtonAccessor",
-    "WidgetContainerAccessor"
+    "status.CraftingCPUScreenMixin",
+    "status.PriorityScreenMixin",
+    "accessor.TabButtonAccessor",
+    "accessor.WidgetContainerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,7 +1,6 @@
 # AE2 Crafting Priority
 
-> **本MODはAnthropicのAIアシスタント「Claude」を利用して開発されました。**
-> 設計・実装・デバッグ・ドキュメント作成のすべてをClaudeとの対話を通じて行っています。
+> 本MODの開発にはAnthropicのAIアシスタント「Claude」を活用しています。
 
 AE2(Applied Energistics 2)の自動クラフトに「優先度」を追加するアドオンMODです。
 

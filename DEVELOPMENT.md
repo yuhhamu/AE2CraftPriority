@@ -1,6 +1,6 @@
 # AE2 Crafting Priority — 開発者向け情報
 
-> **本MODはAnthropicのAIアシスタント「Claude」を利用して開発されました。**
+> 本MODの開発にはAnthropicのAIアシスタント「Claude」を活用しています。
 
 プレイヤー向けの使い方は [README.md](README.md) を参照してください。このファイルは実装・
 ビルドに関する技術的な情報のみを扱います。

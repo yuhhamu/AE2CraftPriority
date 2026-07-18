@@ -1,0 +1,17 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.yuuhamu.ae2craftpriority.compat.advancedae.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "ae2craftpriority.refmap.json",
+  "mixins": [
+    "AdvCraftingCPUClusterMixin",
+    "AdvCraftingBlockEntityMixin",
+    "QuantumComputerMenuMixin",
+    "AdvCraftingCPULogicMixin",
+    "AdvCraftingCPUMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

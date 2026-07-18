@@ -1,0 +1,133 @@
+buildscript {
+    repositories {
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+    }
+    dependencies {
+        classpath "org.spongepowered:mixingradle:${mixingradle_version}"
+    }
+}
+
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+
+apply plugin: 'org.spongepowered.mixin'
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+
+minecraft {
+    mappings channel: mapping_channel, version: mapping_version
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            mods {
+                ae2craftpriority {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            // client run(project.file('run'))とは別ディレクトリにする。
+            // 専用サーバーテストではclientと同時に起動するため、world/logs/mods等を共有すると競合する。
+            workingDirectory project.file('run/server')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            mods {
+                ae2craftpriority {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        data {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            args '--mod', 'ae2craftpriority', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            mods {
+                ae2craftpriority {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+mixin {
+    add sourceSets.main, "ae2craftpriority.refmap.json"
+    config "ae2craftpriority.mixins.json"
+    // AdvancedAE対応Mixin設定。動的登録(Mixins.addConfiguration)だとAdvCraftingBlockEntityが
+    // AdvancedAE自身の登録処理で先にロードされてしまい適用に間に合わないため、ここで
+    // 静的・最早期に登録する。ae2craftpriority-advancedae.mixins.jsonは"required": falseの
+    // ため、AdvancedAE未導入環境では対象クラスが見つからず安全にスキップされる。
+    //
+    // 例外: AdvCraftingCPU単体はForge起動のごく初期に強制ロードされ、この静的登録よりも
+    // 前に読み込まれてしまうため、Mixinではなくリフレクションでフィールドを読んでいる
+    // (AdvancedAeCpuAdapter参照)。
+    config "ae2craftpriority-advancedae.mixins.json"
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url = 'https://api.modrinth.com/maven'
+        content {
+            includeGroup 'maven.modrinth'
+        }
+    }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    implementation fg.deobf("maven.modrinth:ae2:${ae2_version}")
+
+    // AdvancedAE対応(任意依存): コンパイル時にクラス参照を解決するためだけに必要。
+    // ランタイムでは同梱しない(mods.tomlでmandatory=falseの依存として宣言)。
+    compileOnly fg.deobf("maven.modrinth:advancedae:${advancedae_version}")
+
+    annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    filteringCharset = 'UTF-8'
+
+    var replaceProperties = [
+            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
+            forge_version: forge_version, forge_version_range: forge_version_range,
+            loader_version_range: loader_version_range,
+            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license,
+            mod_version: mod_version, mod_authors: mod_authors, mod_description: mod_description,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/mods.toml']) {
+        expand replaceProperties + [project: project]
+    }
+}

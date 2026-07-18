@@ -18,8 +18,6 @@ public class AE2CraftPriorityMod {
     public AE2CraftPriorityMod() {
         Objects.requireNonNull(CraftPriorityStepMenu.TYPE);
 
-        // 任意依存Mod対応。Mixin登録はここで(できるだけ早い段階で)行う必要があるため、
-        // ModListで存在確認できるタイミング(Modコンストラクタ)で行う。
         if (ModList.get().isLoaded(AdvancedAeCompat.MOD_ID)) {
             AdvancedAeCompat.init();
         }

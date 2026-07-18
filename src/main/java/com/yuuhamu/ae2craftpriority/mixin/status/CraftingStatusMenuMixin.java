@@ -75,9 +75,7 @@ public abstract class CraftingStatusMenuMixin extends CraftingCPUMenu implements
     @Override
     public void ae2cp$openPrioritySettings() {
         if (isClientSide()) {
-            // 優先度画面の「戻る」タブを「クラフト状況」表示にするための印
-            // (以前はCraftingCPUScreenMixin側で一律にセットしていたが、QuantumComputerMenu
-            // 個別画面からの遷移と区別する必要が出たため、この画面自身の責務として移した)。
+
             PriorityBackIconOverride.set();
             sendClientAction(ACTION_OPEN_PRIORITY);
         } else {
@@ -89,16 +87,11 @@ public abstract class CraftingStatusMenuMixin extends CraftingCPUMenu implements
                     host = it.next();
                 }
             } else if (this.ae2cp$currentCpu != null) {
-                // バニラの CraftingCPUCluster 以外(AdvancedAEのAdvCraftingCPU等)は
-                // CraftPriorityApi/PriorityAdapter経由で代表ブロックエンティティを取得する。
-                // ここではAdvancedAE等サードパーティModのクラスを直接参照しない
-                // (このMixinは常時ロードされるメインMixin設定に属するため)。
+
                 host = CraftPriorityApi.getPriorityHostBlockEntity(this.ae2cp$currentCpu);
             }
             if (host != null) {
-                // 複数タスクの代表になりうるホスト(AdvancedAEのQuantum Computer等)へ、
-                // 今まさに編集しようとしているタスクを覚えさせる。バニラのCraftingCPUClusterや
-                // 対応アダプタが無い場合は何もしない(CraftPriorityApiのJavadoc参照)。
+
                 CraftPriorityApi.prepareForPriorityEdit(this.ae2cp$currentCpu, host);
                 var player = getPlayerInventory().player;
                 var locator = getLocator();

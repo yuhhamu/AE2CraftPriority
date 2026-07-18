@@ -22,7 +22,6 @@ public final class PriorityReturnTarget {
         TARGETS.put(playerId, new Target(menuType, locator));
     }
 
-    /** 記録を取り出して削除する。無ければnull。 */
     public static Target take(UUID playerId) {
         return TARGETS.remove(playerId);
     }

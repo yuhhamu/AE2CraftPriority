@@ -16,13 +16,6 @@ import appeng.api.stacks.AEKey;
 import appeng.menu.locator.MenuLocator;
 import appeng.menu.me.crafting.CraftConfirmMenu;
 
-/**
- * CPU選択・開始画面のメニュー({@code CraftConfirmMenu})にジョブ優先度を保持させる。
- *
- * <p>値は優先度設定ステップ({@code CraftPriorityStepMenu})から引き渡される。ジョブ提出
- * ({@code startJob()})の実行区間だけ {@link PendingCraftPriority} に流し込み、提出の確定地点
- * ({@code CraftingCpuLogicMixin})で読み取って、実際に選ばれたCPUへ適用する。</p>
- */
 @Mixin(value = CraftConfirmMenu.class, remap = false)
 public abstract class CraftConfirmMenuMixin implements PriorityHolder {
 
@@ -32,12 +25,6 @@ public abstract class CraftConfirmMenuMixin implements PriorityHolder {
     @Shadow
     public boolean autoStart;
 
-    /**
-     * バニラの{@code goBack()}は「CPU選択画面をキャンセルしたら要求数設定画面(CraftAmountMenu)へ戻る」
-     * を決め打ちしている。このMODは要求数設定とCPU選択の間に優先度設定({@code CraftPriorityStepMenu})を
-     * 挟んでいるため、そのままでは優先度設定がスキップされて要求数設定まで戻ってしまう。
-     * ここで戻り先を優先度設定画面に差し替える。
-     */
     @Redirect(
             method = "goBack",
             at = @At(value = "INVOKE", target = "Lappeng/menu/me/crafting/CraftAmountMenu;"

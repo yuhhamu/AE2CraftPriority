@@ -53,11 +53,10 @@ public abstract class CraftingCPUScreenMixin extends AbstractContainerScreen<Cra
     @Unique
     private void ae2cp$openPriority() {
         if (this.menu instanceof CraftingStatusPriorityControl control) {
-            // 戻るタブの表示切り替え(クラフト状況 / 個別CPU画面)は各実装(
-            // CraftingStatusMenuMixin / QuantumComputerMenuMixin)が自分自身の責務として行う。
+
             control.ae2cp$openPrioritySettings();
         } else {
-            // 個別CPU画面: 戻るタブはCPUブロックのままが正しいためフラグはクリア
+
             PriorityBackIconOverride.clear();
             NetworkHandler.instance().sendToServer(SwitchGuisPacket.openSubMenu(PriorityMenu.TYPE));
         }

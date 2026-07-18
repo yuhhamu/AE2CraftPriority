@@ -10,11 +10,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import appeng.me.cluster.implementations.CraftingCPUCluster;
 
-/**
- * AE2の {@code CraftingCPUCluster}(Crafting CPUマルチブロック1台 = ジョブ1件)に、
- * ジョブ単位の実行優先度フィールドを追加する。値はNBTの読み書き末尾に追記して永続化する
- * (既存のAE2セーブフォーマットには影響しない)。
- */
 @Mixin(value = CraftingCPUCluster.class, remap = false)
 public abstract class CraftingCPUClusterMixin implements PriorityHolder {
 

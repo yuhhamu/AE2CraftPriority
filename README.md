@@ -4,6 +4,21 @@
 
 AE2(Applied Energistics 2)の自動クラフトに「優先度」を追加するアドオンMODです。
 
+## 対応バージョン・サポートポリシー
+
+| バージョン | サポート |
+|---|---|
+| [1.20.1](https://github.com/yuhhamu/AE2CraftPriority) (main) | 🟢 Full Support(新機能・バグ修正) |
+| [1.18.2](https://github.com/yuhhamu/AE2CraftPriority/tree/1.18.2) | 🟡 Bug Fix Only |
+
+- 🟢 **Full Support**: 新機能追加・バグ修正の両方を継続的に行います
+- 🟡 **Bug Fix Only**: 新機能追加は行わず、報告されたバグの修正のみ対応します
+- 🔵 **Legacy Support**: 積極的なメンテナンスは行わず、重大な不具合のみ対応します
+
+各バージョンのコードは同名(または`main`)のブランチで管理しています。導入方法・使い方は
+バージョンによらず共通です(以下は`main`=1.20.1版の内容。他バージョンの差分は各ブランチの
+READMEを参照してください)。
+
 ## これは何をするMODですか?
 
 AE2の自動クラフトでは、複数のクラフトジョブが同じ機械(圧縮機・溶鉱炉など、Pattern Provider経由で

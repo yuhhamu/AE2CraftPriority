@@ -19,6 +19,14 @@ public class CraftPriorityStepMenu extends AEBaseMenu implements ISubMenu {
 
     private static final String ACTION_CONFIRM = "ae2cp$confirmPriority";
 
+    /**
+     * {@code open(...)}呼び出しからこの画面を開く直前に渡された初期優先度を、
+     * {@link MenuTypeBuilder#withInitialData}のシリアライザへ橋渡しするための一時変数。
+     * このメニューのホスト({@code ISubMenuHost})自体は優先度を持たないため、初期値を
+     * 画面構築前にクライアントへ渡す手段が無く、この静的フィールド経由で受け渡す。
+     * {@code MenuOpener.open(...)}呼び出しからシリアライザ実行までは同一スレッド・
+     * 同一呼び出しの中で完結するため、ThreadLocalを使うまでもない。
+     */
     private static int pendingInitialPriority = PriorityHolder.DEFAULT_PRIORITY;
 
     public static final MenuType<CraftPriorityStepMenu> TYPE = MenuTypeBuilder
@@ -46,6 +54,7 @@ public class CraftPriorityStepMenu extends AEBaseMenu implements ISubMenu {
         return this.host;
     }
 
+    /** クライアント側の画面初期表示用。サーバー側では未使用(常に既定値のまま)。 */
     public int getPriorityValue() {
         return this.priorityValue;
     }

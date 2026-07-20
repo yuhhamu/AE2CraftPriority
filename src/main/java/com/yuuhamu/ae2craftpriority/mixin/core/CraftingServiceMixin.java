@@ -19,6 +19,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
 import appeng.me.service.CraftingService;
 
+/**
+ * {@code CraftingService#onServerEndTick()} が {@code craftingCPUClusters} を反復する順序を、
+ * 優先度降順に固定する。
+ *
+ * <p>フィールドの実体を {@link PriorityOrderedHashSet} に差し替える方式を採用している
+ * (個々の反復箇所を狙い撃ちしない)。差し替えは {@code craftingCPUClusters} という
+ * フィールド名を直接 {@code @Shadow} して行い、コンストラクタ内の "何番目の
+ * {@code new HashSet()} 呼び出しか" という位置(ordinal)には依存しない。他Mod
+ * (例: AdvancedAE)が同じコンストラクタへ独自のSetフィールドを追加していても、
+ * ordinalのズレで誤ったフィールドを差し替えてしまう事故を避けられる。</p>
+ */
 @Mixin(value = CraftingService.class, remap = false)
 public abstract class CraftingServiceMixin {
 

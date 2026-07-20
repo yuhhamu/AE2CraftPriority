@@ -8,10 +8,29 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.pedroksl.advanced_ae.common.cluster.AdvCraftingCPU;
 import net.pedroksl.advanced_ae.common.cluster.AdvCraftingCPUCluster;
 
+/**
+ * {@code AdvCraftingCPU}(1クラフトタスク=1ジョブに対応する仮想CPU。Quantum Computer 1台から
+ * 複数生成され、並行実行されうる)から優先度を読み書きするアダプタ。
+ *
+ * <p>優先度の実体は {@code AdvCraftingCPU} 自身(タスク単位、{@link AdvCraftingCPUMixin} で
+ * {@link PriorityHolder} 化済み)に保持している。</p>
+ *
+ * <p><b>{@code cluster} フィールドをMixinアクセサではなくリフレクションで読む理由</b>:
+ * {@code AdvCraftingCPU} はForge起動のごく初期({@code
+ * ImmediateWindowHandler$DummyProvider.updateModuleReads})で、このMod側のMixin設定が
+ * 準備される前に一度クラスロードされてしまうため、通常のMixinアクセサでは適用が間に合わない
+ * ({@code MixinTargetAlreadyLoadedException} や {@code ClassCastException} を引き起こす)。
+ * この1フィールドの読み取りだけはリフレクションで回避している。</p>
+ */
 public final class AdvancedAeCpuAdapter implements PriorityAdapter {
 
     private static volatile Field clusterField;
 
+    /**
+     * {@code AdvCraftingCPU} が属する物理Quantum Computer本体({@code AdvCraftingCPUCluster})を
+     * 取得する。優先度編集画面を開くための代表ブロックエンティティ({@link #getPriorityHostBlockEntity}）
+     * を探す用途にのみ使う(優先度の実体はCPU単体側にある)。
+     */
     public static AdvCraftingCPUCluster getCluster(AdvCraftingCPU cpu) {
         try {
             Field field = clusterField;

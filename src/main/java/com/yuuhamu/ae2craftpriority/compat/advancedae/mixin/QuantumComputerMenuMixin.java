@@ -26,6 +26,17 @@ import appeng.menu.implementations.PriorityMenu;
 import appeng.menu.locator.MenuLocators;
 import appeng.menu.me.crafting.CraftingCPUMenu;
 
+/**
+ * {@code QuantumComputerMenu}(Quantum Computerの個別CPU画面)は、{@code CraftingStatusMenu}
+ * (クラフト状況のCPU一覧)と同じく1画面の中で複数タスク({@code AdvCraftingCPU})を切り替えられる
+ * ({@code selectCpu}/{@code setCPU}、AdvancedAE自身の実装)。そのため優先度ボタンを素通しで
+ * AE2バニラの {@code SwitchGuisPacket} に任せると、画面が今どのタスクを選択中かという情報が
+ * 失われ、常にブロック位置だけで優先度画面が開いてしまう。
+ *
+ * <p>{@code CraftingStatusMenuMixin} と同じ {@link CraftingStatusPriorityControl} を実装し、
+ * 画面を開く直前に選択中のタスクを {@link com.yuuhamu.ae2craftpriority.compat.advancedae.AdvCraftingPriorityCpuHost}
+ * 経由でブロックエンティティへ渡す。</p>
+ */
 @Mixin(value = QuantumComputerMenu.class, remap = false)
 public abstract class QuantumComputerMenuMixin extends CraftingCPUMenu implements CraftingStatusPriorityControl {
 

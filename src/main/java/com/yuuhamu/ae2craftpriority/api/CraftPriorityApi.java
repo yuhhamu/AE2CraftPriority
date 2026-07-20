@@ -6,6 +6,18 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import com.yuuhamu.ae2craftpriority.priority.PriorityHolder;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+/**
+ * 他Modから優先度を読み書きするための公開API。
+ *
+ * <p>クラフトCPU(AE2純正の {@code CraftingCPUCluster} や、その {@code ICraftingCPU}
+ * 実装)の優先度は、初期値0・値が大きいほど優先度が高い整数として扱う。詳細な意味づけは
+ * README.md / DEVELOPMENT.mdを参照。</p>
+ *
+ * <p>バニラの{@code CraftingCPUCluster}は最初から対応済み。AdvancedAEのように独自の
+ * クラフトCPU実装を追加するModへ対応させたい場合は、{@link PriorityAdapter} を実装して
+ * {@link #registerAdapter(PriorityAdapter)} で登録する。優先度が不明なオブジェクトを渡した
+ * 場合は既定値0が返る(例外は投げない)。</p>
+ */
 public final class CraftPriorityApi {
 
     private static final List<PriorityAdapter> ADAPTERS = new CopyOnWriteArrayList<>();
@@ -13,6 +25,9 @@ public final class CraftPriorityApi {
     private CraftPriorityApi() {
     }
 
+    /**
+     * 対象オブジェクトの現在の優先度を取得する。対応するアダプタが無い場合は0。
+     */
     public static int getPriority(Object target) {
         if (target instanceof PriorityHolder holder) {
             return holder.ae2cp$getPriority();
@@ -25,6 +40,9 @@ public final class CraftPriorityApi {
         return PriorityHolder.DEFAULT_PRIORITY;
     }
 
+    /**
+     * 対象オブジェクトの優先度を設定する。対応するアダプタが無い場合は何もしない。
+     */
     public static void setPriority(Object target, int priority) {
         if (target instanceof PriorityHolder holder) {
             holder.ae2cp$setPriority(priority);
@@ -38,6 +56,9 @@ public final class CraftPriorityApi {
         }
     }
 
+    /**
+     * このオブジェクトの優先度を本Modが把握できるかどうか(バニラ対応・アダプタ経由のいずれか)。
+     */
     public static boolean isSupported(Object target) {
         if (target instanceof PriorityHolder) {
             return true;
@@ -50,6 +71,10 @@ public final class CraftPriorityApi {
         return false;
     }
 
+    /**
+     * 対象オブジェクトの優先度編集画面を開くための代表ブロックエンティティを取得する。
+     * 対応するアダプタが無い、またはそのアダプタがこの仕組みに未対応の場合は{@code null}。
+     */
     public static BlockEntity getPriorityHostBlockEntity(Object target) {
         for (PriorityAdapter adapter : ADAPTERS) {
             if (adapter.supports(target)) {
@@ -59,6 +84,12 @@ public final class CraftPriorityApi {
         return null;
     }
 
+    /**
+     * {@link #getPriorityHostBlockEntity(Object)} で得たブロックエンティティを使って
+     * {@code PriorityMenu} を開く直前に呼ぶ。詳細は {@link PriorityAdapter#prepareForPriorityEdit}
+     * 参照。対応するアダプタが無い場合は何もしない(バニラの {@code CraftingCPUCluster} は
+     * 1ブロック=1タスクのためそもそもこの仕組み自体を経由しない)。
+     */
     public static void prepareForPriorityEdit(Object target, BlockEntity host) {
         for (PriorityAdapter adapter : ADAPTERS) {
             if (adapter.supports(target)) {
@@ -68,6 +99,13 @@ public final class CraftPriorityApi {
         }
     }
 
+    /**
+     * 新しい種類のクラフトCPU/クラスタに対応するアダプタを登録する。
+     *
+     * <p>Mod初期化のできるだけ早い段階(推奨: コンストラクタ、またはFMLCommonSetupEvent)で
+     * 呼び出すこと。同じオブジェクトを複数のアダプタが {@code supports} した場合、先に
+     * 登録された方が優先される。</p>
+     */
     public static void registerAdapter(PriorityAdapter adapter) {
         ADAPTERS.add(adapter);
     }

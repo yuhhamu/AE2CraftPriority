@@ -17,6 +17,17 @@ import appeng.api.networking.security.IActionSource;
 import net.pedroksl.advanced_ae.common.cluster.AdvCraftingCPU;
 import net.pedroksl.advanced_ae.common.logic.AdvCraftingCPULogic;
 
+/**
+ * ジョブ提出時、事前に選択された優先度({@link PendingCraftPriority})を新しく作られる
+ * {@code AdvCraftingCPU}(=このジョブ専用の仮想CPU)自身に適用する。
+ *
+ * <p>優先度の保持場所は {@code AdvCraftingCPUCluster}(物理本体、複数ジョブが共有)ではなく
+ * {@code AdvCraftingCPU}(ジョブ単体、{@link AdvCraftingCPUMixin} 参照)。
+ * {@code AdvCraftingCPU} はジョブ提出のたびに新規生成され、ジョブ完了時にオブジェクトごと
+ * 破棄されるため、バニラ向け {@code CraftingCpuLogicMixin} が行っている
+ * 「ジョブ完了時に優先度をデフォルトへ手動リセットする」処理はここでは不要
+ * (次のジョブは常に優先度0の新しい {@code AdvCraftingCPU} から始まる)。</p>
+ */
 @Mixin(value = AdvCraftingCPULogic.class, remap = false)
 public abstract class AdvCraftingCPULogicMixin {
 

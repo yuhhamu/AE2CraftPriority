@@ -11,6 +11,7 @@ public final class PriorityBackIconOverride {
         fromCraftingStatus = true;
     }
 
+    /** フラグを取り出してクリアする。 */
     public static boolean take() {
         var result = fromCraftingStatus;
         fromCraftingStatus = false;

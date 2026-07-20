@@ -5,6 +5,7 @@ import com.yuuhamu.ae2craftpriority.mixin.accessor.TabButtonAccessor;
 import com.yuuhamu.ae2craftpriority.mixin.accessor.WidgetContainerAccessor;
 import com.yuuhamu.ae2craftpriority.priority.CraftingPriorityHostMarker;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.player.Inventory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -34,14 +35,15 @@ public abstract class PriorityScreenMixin extends AEBaseScreen<PriorityMenu> {
         }
 
         setTextContent("priority_insertion_hint",
-                Component.translatable("gui.ae2craftpriority.priority_hint_high"));
+                new TranslatableComponent("gui.ae2craftpriority.priority_hint_high"));
         setTextHidden("priority_extraction_hint", true);
 
         if (PriorityBackIconOverride.take()
                 && ((WidgetContainerAccessor) this.widgets).ae2cp$getWidgets().get("back") instanceof TabButton back) {
             var accessor = (TabButtonAccessor) back;
             accessor.ae2cp$setItem(null);
-            accessor.ae2cp$setIcon(Icon.CRAFT_HAMMER);
+            // AE2 11.7.6 (1.18.2)にはIcon.CRAFT_HAMMERが存在しないため、代替としてVIEW_MODE_CRAFTINGを使用
+            accessor.ae2cp$setIcon(Icon.VIEW_MODE_CRAFTING);
             back.setMessage(GuiText.CraftingStatus.text());
         }
     }

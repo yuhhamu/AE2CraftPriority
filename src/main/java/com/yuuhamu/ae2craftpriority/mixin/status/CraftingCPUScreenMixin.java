@@ -70,7 +70,7 @@ public abstract class CraftingCPUScreenMixin extends AbstractContainerScreen<Cra
         if (!this.children().contains(this.ae2cp$priorityButton)) {
             this.addRenderableWidget(this.ae2cp$priorityButton);
         }
-        this.ae2cp$priorityButton.setX(this.cancel.getX() - 4 - 16);
-        this.ae2cp$priorityButton.setY(this.cancel.getY() + (this.cancel.getHeight() - 16) / 2);
+        this.ae2cp$priorityButton.x = this.cancel.x - 4 - 16;
+        this.ae2cp$priorityButton.y = this.cancel.y + (this.cancel.getHeight() - 16) / 2;
     }
 }

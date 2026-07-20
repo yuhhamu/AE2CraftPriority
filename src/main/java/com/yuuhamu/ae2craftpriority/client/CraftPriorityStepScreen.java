@@ -3,6 +3,7 @@ package com.yuuhamu.ae2craftpriority.client;
 import com.yuuhamu.ae2craftpriority.menu.CraftPriorityStepMenu;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.player.Inventory;
 
 import appeng.client.gui.AEBaseScreen;
@@ -27,12 +28,11 @@ public class CraftPriorityStepScreen extends AEBaseScreen<CraftPriorityStepMenu>
         this.priority.setLongValue(menu.getPriorityValue());
         this.priority.setOnConfirm(this::confirm);
 
-        this.nextButton = Button.builder(Component.translatable("gui.ae2craftpriority.next"), b -> confirm())
-                .bounds(0, 0, 50, 20)
-                .build();
+        this.nextButton = new Button(0, 0, 50, 20, new TranslatableComponent("gui.ae2craftpriority.next"),
+                b -> confirm());
 
         setTextContent("priority_insertion_hint",
-                Component.translatable("gui.ae2craftpriority.priority_hint_high"));
+                new TranslatableComponent("gui.ae2craftpriority.priority_hint_high"));
         setTextHidden("priority_extraction_hint", true);
     }
 
@@ -45,8 +45,8 @@ public class CraftPriorityStepScreen extends AEBaseScreen<CraftPriorityStepMenu>
     @Override
     protected void updateBeforeRender() {
         super.updateBeforeRender();
-        this.nextButton.setX(this.leftPos + this.imageWidth - 4 - this.nextButton.getWidth());
-        this.nextButton.setY(this.topPos + this.imageHeight - 4 - this.nextButton.getHeight());
+        this.nextButton.x = this.leftPos + this.imageWidth - 4 - this.nextButton.getWidth();
+        this.nextButton.y = this.topPos + this.imageHeight - 4 - this.nextButton.getHeight();
     }
 
     private void confirm() {

@@ -24,7 +24,7 @@ public abstract class CraftingCPUMenuMixin implements CraftingCPUMenuGridAccess 
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void ae2cp$onInit(MenuType<?> menuType, int id, Inventory ip, Object te, CallbackInfo ci) {
-        if (!ip.player.level().isClientSide()) {
+        if (!ip.player.level.isClientSide) {
             PriorityReturnTarget.clear(ip.player.getUUID());
         }
     }

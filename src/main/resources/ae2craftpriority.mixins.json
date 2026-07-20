@@ -1,0 +1,26 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.yuuhamu.ae2craftpriority.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "ae2craftpriority.refmap.json",
+  "mixins": [
+    "core.CraftingBlockEntityMixin",
+    "core.CraftingCPUClusterMixin",
+    "core.CraftingCPUMenuMixin",
+    "core.CraftingCpuLogicMixin",
+    "core.CraftingServiceMixin",
+    "craft.CraftAmountMenuMixin",
+    "craft.CraftConfirmMenuMixin",
+    "status.CraftingStatusMenuMixin"
+  ],
+  "client": [
+    "status.CraftingCPUScreenMixin",
+    "status.PriorityScreenMixin",
+    "accessor.TabButtonAccessor",
+    "accessor.WidgetContainerAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

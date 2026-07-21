@@ -111,6 +111,10 @@ CPU一覧では**ジョブを実行中(アクティブ)のCPUのみ**「CPU #1@1
 作者: yuuhamu
 Applied Energistics 2 (AE2) は別途必要な依存MODです。このMODはAE2を同梱していません。
 
+## ライセンス
+
+本MODは [MIT License](LICENSE) の下で公開されています。
+
 ---
 
 開発・ビルド方法など技術的な情報は [DEVELOPMENT.md](DEVELOPMENT.md) を参照してください。

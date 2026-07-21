@@ -1,0 +1,36 @@
+{
+  "$schema": "schema.json",
+  "includes": ["common/common.json"],
+  "background": {
+    "texture": "guis/priority.png",
+    "srcRect": [0, 0, 176, 125]
+  },
+  "text": {
+    "dialog_title": {
+      "text": {
+        "translate": "gui.ae2craftpriority.craft_priority_step"
+      },
+      "position": {
+        "left": 8,
+        "top": 6
+      }
+    },
+    "priority_hint": {
+      "text": {
+        "translate": "gui.ae2craftpriority.priority_hint_high"
+      },
+      "position": {
+        "left": 8,
+        "top": 98
+      }
+    }
+  },
+  "widgets": {
+    "priority": {
+      "left": 20,
+      "top": 30,
+      "width": 138,
+      "height": 62
+    }
+  }
+}

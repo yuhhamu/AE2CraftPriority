@@ -5,18 +5,9 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "ae2craftpriority.refmap.json",
   "mixins": [
-    "core.CraftingCPUClusterMixin",
-    "core.CraftingServiceMixin",
-    "core.CraftingCpuLogicMixin",
-    "core.CraftingCPUMenuMixin",
-    "core.TileCraftingTileMixin",
-    "craft.CraftAmountMenuMixin",
-    "craft.CraftConfirmMenuMixin",
-    "status.CraftingStatusMenuMixin"
+    "core.PocBootstrapLogMixin"
   ],
-  "client": [
-    "status.CraftingCPUScreenMixin"
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   }

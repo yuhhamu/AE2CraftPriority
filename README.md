@@ -5,24 +5,32 @@ AE2(Applied Energistics 2)の自動クラフトに、ジョブ単位の実行優
 
 ## 現在の状態(2026-07-22時点)
 
-**プロジェクト骨格のみ。実装は未着手。**
+**ビルド直前まで準備完了。実際のビルド・実機起動テストは未実施(1.16.5移植でビルド環境を使用中のため)。**
 
 - 設計書: [`design/PORT-DESIGN-1.12.2.md`](design/PORT-DESIGN-1.12.2.md)
-  - 3〜10章: 2026-07-20作成の初版設計(12個のMixin対応表、API早見表、ツールチェイン設定等)
-  - 11章: 2026-07-22の追加調査。1.20.1版addon実ソース・1.12.2版AE2本体実ソースを直接確認し、
-    低信頼度だった項目(3.5/3.9/3.10/3.11/3.12/3.13)を確定情報に更新。
-    優先度UIには「経路A(クラフトフロー内の新規GUI)」「経路B(`IPriorityHost`再利用)」の
-    2系統があることが判明している。**3〜10章と11章で矛盾する記述がある場合は11章を優先すること。**
+  - 3〜10章: 2026-07-20作成の初版設計
+  - 11章: 2026-07-22の追加調査。優先度UIの経路A/B分離、実装不要になった3 Mixin等
+- `gradle.properties` / `build.gradle`: AE2 1.12.2本体の依存座標(CurseForge/CurseMaven、
+  `appliedenergistics2-rv6-stable-7.jar`、2026-07-22にCurseForgeで確認済み)、
+  MixinBooter 11.1(Forge1.12.2向けMixinランタイム、2026-07-22時点の最新1.12.2対応版)を設定済み。
+- `ae2craftpriority.mixins.json`: **現時点ではPoC用の`core.PocBootstrapLogMixin`のみを登録**。
+  AE2本体のメインクラス`appeng.core.AppEng#preInit()`末尾で1行ログを出すだけの検証用Mixin。
+  design 11-3節で確定した9個の本実装Mixinは、このPoCで土台が動くことを確認してから
+  1個ずつ追加していく(design 8章の推奨順序参照)。
 
-## 次にやること(design/PORT-DESIGN-1.12.2.md 8章 + 11-4節)
+## 未検証・要確認のTODO
 
-1. **Mixin導入のPoC**: Forge1.12.2にはMixinの標準統合が無い。MixinBooter等の共有ライブラリMOD経由か、
-   自前coremod(`IFMLLoadingPlugin`)かを検証し、「1行ログを出すだけのMixin」が正しくロード・適用される
-   ことを確認する。**この検証が済むまで、`build.gradle`のmixin関連設定・`gradle.properties`の
-   `ae2_version`(TODO)は動作未確認。**
-2. AE2 1.12.2(rv6)本体の配布形態・正確なMaven座標を確認する(`gradle.properties`の`ae2_version=rv6-stable-TODO`を確定させる)。
-3. 経路B(`TileCraftingTileMixin`が`IPriorityHost`を実装)から着手するのが依存が少なく検証しやすい
-   (詳細は設計書11-1・11-4節)。
+- **Mixin導入のPoC自体が未検証**(design 8章手順1)。`gradlew build` または `runClient` を実行し、
+  `core.PocBootstrapLogMixin`のログが起動ログに出るかを確認すること。
+- MixinBooterのjarがそのままGradle依存として使える配布形態か(`deobfCompile`が必要か等)は未確認
+  (`build.gradle`内のTODOコメント参照)。
+- MixinBooterのForge modid・mcmod.infoでの依存宣言要否は未確認(現状mcmod.infoには追加していない)。
+
+## 次にやること
+
+1. `gradlew build`(または既存のGradle MCP/mod-test-runner経由)でPoCが通るか確認する。
+2. 通れば、design 11-4節の優先順位(経路Bの`TileCraftingTileMixin`から着手)に従い、
+   本実装Mixinを1個ずつ`mixins.json`に追加しながら実装・テスト・コミットしていく。
 
 ## 開発
 

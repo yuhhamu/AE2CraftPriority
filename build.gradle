@@ -1,12 +1,12 @@
 // AE2 Crafting Priority - 1.12.2版
 // ベースはAE2 1.12.2本体(rv6-1.12ブランチ)自身のbuild.gradleパターン
 // (ForgeGradle 2.3-SNAPSHOT / Gradle 4.8 / MCP snapshot_20171003)に、
-// Mixin導入(design/PORT-DESIGN-1.12.2.md 6章)を追加した構成。
+// MixinBooter(design/PORT-DESIGN-1.12.2.md 6章)経由のMixin導入を追加した構成。
 //
-// TODO(要PoC検証): Forge1.12.2にはMixinの標準統合が無いため、
-// 「1行ログを出すだけのMixin」でロード・適用を検証してから本実装に着手すること
-// (design/PORT-DESIGN-1.12.2.md 8章 手順1)。下記mixin{}ブロック・
-// annotationProcessor依存は、その検証が済むまで動作未確認。
+// TODO(要PoC検証、design/PORT-DESIGN-1.12.2.md 8章手順1): Forge1.12.2にはMixinの標準統合が
+// 無いため、MixinBooter 11.1でMixinが実際にロード・適用されるか、本プロジェクトでは未検証。
+// まず`core.PocBootstrapLogMixin`(AppEng#preInit末尾で1行ログを出すだけ)で検証してから、
+// design 11-3節の9個の本実装Mixinをmixins.jsonに追加していくこと。
 
 buildscript {
     repositories {
@@ -43,8 +43,6 @@ minecraft {
     version = "${minecraft_version}-${forge_version}"
     runDir = "run"
     mappings = mcp_mappings
-
-    replace '@VERSION@', project.version
 }
 
 mixin {
@@ -56,15 +54,27 @@ repositories {
     jcenter()
     mavenCentral()
     maven {
-        // AE2 1.12.2(rv6)配布元(要確認、gradle.propertiesのae2_version参照)
-        name = 'curseforge-maven-TODO'
-        url = 'https://www.cursemaven.com'
+        // AE2 1.12.2(rv6)配布元。1.16.5移植版と同じCurseMaven経由の取得パターン。
+        url = 'https://cursemaven.com'
+        content {
+            includeGroup 'curse.maven'
+        }
+    }
+    maven {
+        // MixinBooter配布元
+        url = 'https://maven.cleanroommc.com'
     }
 }
 
 dependencies {
-    // TODO(要検証): 座標未確定。design/PORT-DESIGN-1.12.2.md 7.2節「要検証事項」参照。
-    // deobfCompile "appeng:appliedenergistics2:${ae2_version}"
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    deobfCompile "curse.maven:applied-energistics-2-${ae2_curseforge_project_id}:${ae2_curseforge_file_id}"
+
+    // MixinBooter: Forge1.12.2向けMixinランタイムブートストラップ(design 6章)。
+    // TODO(要検証): MixinBooterのjarが既にdeobf済み(unobfuscated)配布かどうか未確認。
+    // 通常のMinecraft Mod用deobfCompile("curse.maven:...")形式が必要になる可能性がある。
+    compile "zone.rong:mixinbooter:${mixinbooter_version}"
 
     compile "org.spongepowered:mixin:${mixin_version}"
     annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
@@ -85,6 +95,9 @@ processResources {
 
 jar {
     manifest {
-        attributes 'FMLAT': 'ae2craftpriority_at.cfg'
+        attributes([
+                // MixinBooterが読み取るMixin設定登録(1.16.5移植版と同じ`MixinConfigs`属性パターン)
+                'MixinConfigs': "${mod_id}.mixins.json",
+        ])
     }
 }

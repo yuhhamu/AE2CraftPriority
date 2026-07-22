@@ -1,0 +1,90 @@
+// AE2 Crafting Priority - 1.12.2版
+// ベースはAE2 1.12.2本体(rv6-1.12ブランチ)自身のbuild.gradleパターン
+// (ForgeGradle 2.3-SNAPSHOT / Gradle 4.8 / MCP snapshot_20171003)に、
+// Mixin導入(design/PORT-DESIGN-1.12.2.md 6章)を追加した構成。
+//
+// TODO(要PoC検証): Forge1.12.2にはMixinの標準統合が無いため、
+// 「1行ログを出すだけのMixin」でロード・適用を検証してから本実装に着手すること
+// (design/PORT-DESIGN-1.12.2.md 8章 手順1)。下記mixin{}ブロック・
+// annotationProcessor依存は、その検証が済むまで動作未確認。
+
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        mavenCentral()
+        maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath "org.spongepowered:mixingradle:${mixingradle_version}"
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'org.spongepowered.mixin'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+// 日本語コメントを含むソースのビルド時、Windows環境でANSIコードページにより
+// 文字化け・エラーが起きる問題への対策(design/PORT-DESIGN-1.12.2.md 7.2節)
+compileJava.options.encoding = 'UTF-8'
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+version = mod_version
+group = mod_group_id
+archivesBaseName = mod_id
+
+minecraft {
+    version = "${minecraft_version}-${forge_version}"
+    runDir = "run"
+    mappings = mcp_mappings
+
+    replace '@VERSION@', project.version
+}
+
+mixin {
+    add sourceSets.main, "${mod_id}.refmap.json"
+}
+
+repositories {
+    mavenLocal()
+    jcenter()
+    mavenCentral()
+    maven {
+        // AE2 1.12.2(rv6)配布元(要確認、gradle.propertiesのae2_version参照)
+        name = 'curseforge-maven-TODO'
+        url = 'https://www.cursemaven.com'
+    }
+}
+
+dependencies {
+    // TODO(要検証): 座標未確定。design/PORT-DESIGN-1.12.2.md 7.2節「要検証事項」参照。
+    // deobfCompile "appeng:appliedenergistics2:${ae2_version}"
+
+    compile "org.spongepowered:mixin:${mixin_version}"
+    annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'mcversion', minecraft_version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': project.version, 'mcversion': minecraft_version
+    }
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+jar {
+    manifest {
+        attributes 'FMLAT': 'ae2craftpriority_at.cfg'
+    }
+}

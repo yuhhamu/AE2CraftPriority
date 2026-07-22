@@ -1,0 +1,15 @@
+[
+  {
+    "modid": "ae2craftpriority",
+    "name": "AE2 Crafting Priority",
+    "description": "AE2(Applied Energistics 2)の自動クラフトに、ジョブ単位の実行優先度を追加するアドオンMOD。1.20.1版の移植。",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://github.com/yuhhamu/AE2CraftPriority/issues",
+    "authorList": ["yuuhamu"],
+    "credits": "1.20.1版をベースにAIアシスタントClaudeを活用して開発",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": ["appliedenergistics2"]
+  }
+]

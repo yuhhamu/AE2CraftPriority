@@ -94,3 +94,19 @@ tasks.named('processResources', ProcessResources).configure {
         expand replaceProperties + [project: project]
     }
 }
+
+// ===== 一時診断タスク(Windows Sockets error 10106の原因調査用、調査後に削除すること) =====
+tasks.register('diagWinsockCatalog', Exec) {
+    commandLine 'C:\\Windows\\System32\\cmd.exe', '/c', 'C:\\Windows\\System32\\netsh.exe winsock show catalog > "Z:\\Claude\\Projects\\MinecraftMods\\AE2CraftPriority-1.21.1\\diag\\winsock-catalog.txt" 2>&1'
+    ignoreExitValue = true
+}
+tasks.register('diagSecurityProducts', Exec) {
+    commandLine 'C:\\Windows\\System32\\cmd.exe', '/c',
+            'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoProfile -ExecutionPolicy Bypass -File "Z:\\Claude\\Projects\\MinecraftMods\\AE2CraftPriority-1.21.1\\diag\\check-security.ps1" > "Z:\\Claude\\Projects\\MinecraftMods\\AE2CraftPriority-1.21.1\\diag\\ps-run-log.txt" 2>&1'
+    ignoreExitValue = true
+}
+tasks.register('diagCrypto', Exec) {
+    commandLine 'C:\\Windows\\System32\\cmd.exe', '/c',
+            'Z:\\Claude\\Projects\\MinecraftMods\\AE2CraftPriority-1.21.1\\diag\\check-crypto.bat > "Z:\\Claude\\Projects\\MinecraftMods\\AE2CraftPriority-1.21.1\\diag\\crypto-log.txt" 2>&1'
+    ignoreExitValue = true
+}

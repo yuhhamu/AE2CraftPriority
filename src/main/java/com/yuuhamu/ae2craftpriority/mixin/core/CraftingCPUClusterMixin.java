@@ -1,6 +1,7 @@
 package com.yuuhamu.ae2craftpriority.mixin.core;
 
 import com.yuuhamu.ae2craftpriority.priority.PriorityHolder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -34,12 +35,12 @@ public abstract class CraftingCPUClusterMixin implements PriorityHolder {
     }
 
     @Inject(method = "writeToNBT", at = @At("TAIL"))
-    private void ae2cp$onWriteToNBT(CompoundTag data, CallbackInfo ci) {
+    private void ae2cp$onWriteToNBT(CompoundTag data, HolderLookup.Provider registries, CallbackInfo ci) {
         data.putInt(NBT_KEY, this.ae2cp$priority);
     }
 
     @Inject(method = "readFromNBT", at = @At("TAIL"))
-    private void ae2cp$onReadFromNBT(CompoundTag data, CallbackInfo ci) {
+    private void ae2cp$onReadFromNBT(CompoundTag data, HolderLookup.Provider registries, CallbackInfo ci) {
         this.ae2cp$priority = data.contains(NBT_KEY) ? data.getInt(NBT_KEY) : PriorityHolder.DEFAULT_PRIORITY;
     }
 }

@@ -6,11 +6,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.world.inventory.MenuType;
 
-import appeng.menu.locator.MenuLocator;
+import appeng.menu.locator.MenuHostLocator;
 
 public final class PriorityReturnTarget {
 
-    public record Target(MenuType<?> menuType, MenuLocator locator) {
+    public record Target(MenuType<?> menuType, MenuHostLocator locator) {
     }
 
     private static final Map<UUID, Target> TARGETS = new ConcurrentHashMap<>();
@@ -18,7 +18,7 @@ public final class PriorityReturnTarget {
     private PriorityReturnTarget() {
     }
 
-    public static void set(UUID playerId, MenuType<?> menuType, MenuLocator locator) {
+    public static void set(UUID playerId, MenuType<?> menuType, MenuHostLocator locator) {
         TARGETS.put(playerId, new Target(menuType, locator));
     }
 

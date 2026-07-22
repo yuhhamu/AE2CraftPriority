@@ -1,7 +1,38 @@
 pluginManagement {
     repositories {
-        maven { url = 'https://maven.minecraftforge.net/' }
         gradlePluginPortal()
         mavenCentral()
     }
+    plugins {
+        // AE2自身の1.21.1向けsettings.gradleに合わせ、pluginManagement側でバージョンを一括宣言する。
+        // build.gradle側の plugins{} でバージョンを重複指定すると
+        // "plugin is already on the classpath with an unknown version" で解決失敗する
+        // (net.neoforged.moddev.repositories 適用時に net.neoforged.moddev のクラスも
+        // 同じ成果物からクラスパスに載るため)。
+        id 'net.neoforged.moddev' version '2.0.74'
+        id 'net.neoforged.moddev.repositories' version '2.0.74'
+    }
 }
+plugins {
+    id 'net.neoforged.moddev.repositories'
+}
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            // NeoForge本体・neoform-runtime等、net.neoforged.moddev.repositoriesが自動追加すると
+            // 期待していたが実際には見つからなかったため明示的に追加(NeoForge公式モッドテンプレート
+            // の標準的な記述、2026-07-22ビルド確認で必要と判明)。
+            name = 'NeoForged'
+            url = 'https://maven.neoforged.net/releases'
+        }
+        mavenCentral()
+        maven {
+            url = 'https://api.modrinth.com/maven'
+            content {
+                includeGroup 'maven.modrinth'
+            }
+        }
+    }
+}
+
+rootProject.name = 'ae2craftpriority'

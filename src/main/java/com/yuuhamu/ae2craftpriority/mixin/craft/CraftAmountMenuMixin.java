@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 import appeng.api.stacks.AEKey;
 import appeng.menu.MenuOpener;
-import appeng.menu.locator.MenuLocator;
+import appeng.menu.locator.MenuHostLocator;
 import appeng.menu.me.crafting.CraftAmountMenu;
 
 @Mixin(value = CraftAmountMenu.class, remap = false)
@@ -23,8 +23,8 @@ public abstract class CraftAmountMenuMixin {
 
     @Redirect(method = "confirm", at = @At(value = "INVOKE",
             target = "Lappeng/menu/MenuOpener;open(Lnet/minecraft/world/inventory/MenuType;"
-                    + "Lnet/minecraft/world/entity/player/Player;Lappeng/menu/locator/MenuLocator;)Z"))
-    private boolean ae2cp$openPriorityStep(MenuType<?> type, Player player, MenuLocator locator,
+                    + "Lnet/minecraft/world/entity/player/Player;Lappeng/menu/locator/MenuHostLocator;)Z"))
+    private boolean ae2cp$openPriorityStep(MenuType<?> type, Player player, MenuHostLocator locator,
             int amount, boolean craftMissingAmount, boolean autoStart) {
         CraftPriorityStepMenu.open((ServerPlayer) player, locator, this.whatToCraft, amount, autoStart,
                 PriorityHolder.DEFAULT_PRIORITY);

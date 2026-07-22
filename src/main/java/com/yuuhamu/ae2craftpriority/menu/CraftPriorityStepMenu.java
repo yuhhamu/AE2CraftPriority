@@ -12,7 +12,7 @@ import appeng.menu.AEBaseMenu;
 import appeng.menu.ISubMenu;
 import appeng.menu.MenuOpener;
 import appeng.menu.implementations.MenuTypeBuilder;
-import appeng.menu.locator.MenuLocator;
+import appeng.menu.locator.MenuHostLocator;
 import appeng.menu.me.crafting.CraftConfirmMenu;
 
 public class CraftPriorityStepMenu extends AEBaseMenu implements ISubMenu {
@@ -59,7 +59,7 @@ public class CraftPriorityStepMenu extends AEBaseMenu implements ISubMenu {
         return this.priorityValue;
     }
 
-    public static void open(ServerPlayer player, MenuLocator locator, AEKey whatToCraft, int amount,
+    public static void open(ServerPlayer player, MenuHostLocator locator, AEKey whatToCraft, int amount,
             boolean autoStart, int initialPriority) {
         pendingInitialPriority = initialPriority;
         MenuOpener.open(TYPE, player, locator);

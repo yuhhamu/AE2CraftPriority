@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import appeng.api.stacks.AEKey;
-import appeng.menu.locator.MenuLocator;
+import appeng.menu.locator.MenuHostLocator;
 import appeng.menu.me.crafting.CraftConfirmMenu;
 
 /**
@@ -41,9 +41,9 @@ public abstract class CraftConfirmMenuMixin implements PriorityHolder {
     @Redirect(
             method = "goBack",
             at = @At(value = "INVOKE", target = "Lappeng/menu/me/crafting/CraftAmountMenu;"
-                    + "open(Lnet/minecraft/server/level/ServerPlayer;Lappeng/menu/locator/MenuLocator;"
+                    + "open(Lnet/minecraft/server/level/ServerPlayer;Lappeng/menu/locator/MenuHostLocator;"
                     + "Lappeng/api/stacks/AEKey;I)V"))
-    private void ae2cp$backToPriorityStep(ServerPlayer player, MenuLocator locator, AEKey whatToCraft, int amount) {
+    private void ae2cp$backToPriorityStep(ServerPlayer player, MenuHostLocator locator, AEKey whatToCraft, int amount) {
         CraftPriorityStepMenu.open(player, locator, whatToCraft, amount, this.autoStart, this.ae2cp$getPriority());
     }
 

@@ -884,3 +884,105 @@ public abstract class PriorityScreenMixin extends AEBaseScreen<PriorityMenu> {
 ---
 
 以上、2026-07-22セッションでの追加調査結果。次回セッションはこの内容を`PORT-DESIGN-1.12.2.md`本体にマージし、プロジェクトディレクトリ(`Z:\Claude\Projects\MinecraftMods\AE2CraftPriority-1.12.2`、Git初期化・GitHub非公開リポジトリ作成含む)の作成に進む。
+
+---
+
+## 12. GUI設計の見直し(2026-07-23): `Knowledge/ae2-priorityscreen-gui-design-reference.md`反映
+
+### 12.0. 経緯と結論の要約
+
+`Knowledge/ae2-priorityscreen-gui-design-reference.md`(および参照先の`Knowledge/ae2-priorityscreen-back-navigation-and-icon-fix.md`)を読み、11章時点の結論を実ソース(`/tmp/ae2-1122`、AE2 `rv6-1.12`ブランチ)で再検証した。
+
+**11-3節の表で「1.12.2では実装不要の見込み」としていた`PriorityScreenMixin`・`TabButtonAccessor`・`WidgetContainerAccessor`相当の3項目のうち、「戻り導線(バック機能)の代替Mixin」は不要ではなく必要と判明したため、ここで訂正する。**
+
+一方、「化粧直し(アイコン差し替え)」については1.12.2固有の事情により**1.16.5より大幅に簡単になる**ことも判明した。差分は以下の通り:
+
+| 項目 | 11章時点の結論 | 12章での訂正後の結論 |
+|---|---|---|
+| 戻りボタンのクリック時導線(`PacketSwitchGuis`バイパス) | 不要の見込み | **必要。1.12.2にも同種のロケータ再利用バグが存在することを実ソースで確認**(12.1節) |
+| 戻りボタンのアイコン差し替え(化粧直し) | 不要の見込み(≒`TabButtonAccessor`/`WidgetContainerAccessor`相当が不要) | **Mixin自体は不要のまま(結論は維持)。ただし理由が異なり、`GuiTabButton`がItemStackアイコンを標準サポートするためカスタム描画コード自体が原理的に不要**(12.2節) |
+| `PriorityReturnTarget`相当(戻り先記録) | 未検討 | **移植が必要。ロジックはバージョン非依存でそのまま流用可能**(12.3節) |
+
+### 12.1. 戻り導線の再検証: `PacketSwitchGuis`は1.12.2にも同種のバグを持つ
+
+1.16.5の調査(`ae2-priorityscreen-back-navigation-and-icon-fix.md`)で特定された根本原因は、AE2純正の戻るボタンが「現在開いているコンテナ自身のロケータを再利用すれば元の画面に戻れる」という前提で実装されている点にあった。この前提は、優先度画面を素直な導線(ブロック右クリックなど)で開いた場合は成立するが、本MODのように「Crafting Statusタブのレンチボタン経由」という別ルートで開いた場合には成立しない。
+
+`/tmp/ae2-1122`の実ソースを確認したところ、1.12.2でも**構造的に同一のバグパターン**が存在することを確認した。
+
+- `appeng.client.gui.implementations.GuiPriority#actionPerformed`(`GuiPriority.java:122-125`)は、戻るボタン(`originalGuiBtn`)がクリックされた際、`NetworkHandler.instance().sendToServer(new PacketSwitchGuis(this.OriginalGui))`を送信するのみで、「元々どの画面のどの状態から遷移してきたか」の情報を一切含まない。`this.OriginalGui`は`con.getPriorityHost().getGuiBridge()`から取得した`GuiBridge`列挙値1個だけであり、それ以外の文脈(どのCPU/どのタブ/どのスクロール位置か等)は保持されない。
+- サーバ側ハンドラ`appeng.core.sync.packets.PacketSwitchGuis#serverPacketData`(`PacketSwitchGuis.java:61-75`)は、`player.openContainer`(=現在開いている`ContainerPriority`自身)から`AEBaseContainer#getOpenContext()`を取得し、その`ContainerOpenContext#getTile()`(=現在の優先度コンテナが記録している元のTileEntity)を使って`Platform.openGUI(player, te, side, newGui)`を呼び出す。つまり**「現在開いている優先度コンテナ自身が持つ、コンテナ生成時点のロケータ」を再利用する**という、1.16.5と全く同じ設計上の前提がある。
+- `appeng.container.implementations.ContainerPriority`のコンストラクタ(`ContainerPriority.java:47`)は`super(ip, (TileEntity)(te instanceof TileEntity ? te : null), (IPart)(te instanceof IPart ? te : null))`という形で、`IPriorityHost`実装(`te`)が`TileEntity`でも`IPart`でもない場合は`null`を渡す。さらに`ContainerOpenContext`のコンストラクタ(`ContainerOpenContext.java:40-44`)は、渡されたオブジェクトが`IPart`でも`TileEntity`でもない場合`isItem = true`とマークし、`getTile()`は常に`null`を返す(`ContainerOpenContext.java:46-53`)。
+
+本MODの経路B(Crafting Statusタブ → レンチボタン → 優先度編集)で編集対象となる「優先度ホスト」は、現実のワールド上のブロック(インターフェース等)ではなく、**選択中のCPUに紐づくクラフトジョブを表す合成的な`IPriorityHost`実装**になる想定である(11章2.3/1.3節参照)。この合成ホストが`TileEntity`でも`IPart`でもない実装になった場合、`ContainerOpenContext.getTile()`は常に`null`を返し、`PacketSwitchGuis`のサーバ側ハンドラは`Platform.openGUI(player, null, side, newGui)`を呼ぶことになる。`GuiBridge.GUI_PRIORITY`は`GuiHostType.WORLD`として登録されている(`GuiBridge.java:180`)ため、`tile`が`null`のケースの挙動はワールド系GUIとしては本来想定されておらず、意図した「端末のCrafting Statusタブへ戻る」動作にはならない(たとえ合成ホストを無理に`TileEntity`実装にラップしたとしても、`Platform.openGUI`が開くのは「そのタイルの既定GUI」であり、端末の特定タブ・特定スクロール位置に戻ることはできない)。
+
+**結論**: 1.16.5と同じ問題が1.12.2にも存在する。したがって11章での「戻り導線のMixinは不要」という結論を撤回し、以下の対処が必要と改める。
+
+#### 12.1.1. 対処方針(1.12.2版)
+
+1.16.5では「マーカーインターフェース + `PriorityContainerMixin` + `PriorityScreenMixin`書き換え」の3点セットが必要だったが、1.12.2は`PacketSwitchGuis`のサーバ側ハンドラが単一の集約ポイント(`serverPacketData`)になっているため、**サーバ側Mixin1本だけで完結できる見込み**であり、1.16.5より単純化できる。
+
+- **マーカーインターフェース**: `IPriorityHost`を実装する合成ホスト(CPUクラフトジョブ用)に、戻り先情報を持つ独自インターフェース(仮称`IReturnableSyntheticPriorityHost`)を実装させる。
+- **サーバ側Mixin(新規、`PacketSwitchGuisMixin`)**: `PacketSwitchGuis#serverPacketData`に対して`@Inject(at = @At("HEAD"), cancellable = true)`を張り、`player.openContainer instanceof ContainerPriority`かつ`((ContainerPriority) c).getPriorityHost() instanceof IReturnableSyntheticPriorityHost`の場合、`ci.cancel()`した上で本MOD独自の復帰処理(`PriorityReturnTarget`相当、12.3節)を実行する。それ以外(通常のワールド上`IPriorityHost`実装、たとえばインターフェース等の在来ケース)は素通りさせ、AE2純正の挙動を一切変更しない。
+- クライアント側(`GuiPriority`/`originalGuiBtn`のクリックハンドラ)は改変不要。`PacketSwitchGuis`自体は従来どおり送信させ、その中身(=`this.OriginalGui`という`GuiBridge`列挙値)は今回の分岐では使用せず、サーバ側でPriorityReturnTargetの記録を優先する。
+- `@Redirect`で送信パケット自体を差し替える案(クライアント側Mixin)も検討したが、判定に必要な情報(`ContainerPriority#getPriorityHost()`)はサーバ・クライアント双方から到達可能であり、より変更範囲が小さいサーバ側`@Inject`案を採用する。
+
+### 12.2. アイコン差し替えの再検証: `GuiTabButton`はItemStackアイコンを標準サポートするため、1.16.5のBlitterハック相当は不要
+
+1.16.5では、戻るボタンのアイコンをAE2純正の`Icon`列挙型/テクスチャアトラス経由でしか描画できず、移植元の(アトラスに存在しない)アイコンを表示するために`Blitter`ヘルパー経由の低レベル描画ハックが必要だった(`ae2-priorityscreen-back-navigation-and-icon-fix.md`参照)。
+
+`/tmp/ae2-1122`の`appeng.client.gui.widgets.GuiTabButton`を確認したところ、1.12.2の`GuiTabButton`は最初から2種類のコンストラクタを持つことを確認した(`GuiTabButton.java:41-70`)。
+
+- `GuiTabButton(x, y, int ico, String message, RenderItem ir)` ─ AE2純正アトラス(`states.png`)上のインデックスでアイコンを指定する版。
+- `GuiTabButton(x, y, ItemStack ico, String message, RenderItem ir)` ─ **任意の`ItemStack`をアイコンとして使う版**。`drawButton`内部では`this.itemRenderer.renderItemAndEffectIntoGUI(this.myItem, ...)`という、標準のGUIアイテムレンダリングパイプラインをそのまま呼んでいるだけである(`GuiTabButton.java:105-113`)。
+
+さらに`GuiPriority#initGui`(`GuiPriority.java:84-91`)を見ると、戻るボタン自体が最初から**ItemStack版コンストラクタで生成されている**ことを確認した。
+
+```java
+final ItemStack myIcon = con.getPriorityHost().getItemStackRepresentation();
+this.OriginalGui = con.getPriorityHost().getGuiBridge();
+if( this.OriginalGui != null && !myIcon.isEmpty() )
+{
+    this.buttonList.add( this.originalGuiBtn = new GuiTabButton( this.guiLeft + 154, this.guiTop, myIcon, myIcon.getDisplayName(), this.itemRender ) );
+}
+```
+
+つまり、戻るボタンのアイコンは`IPriorityHost#getItemStackRepresentation()`が返す`ItemStack`をそのまま表示する仕組みであり、**AE2純正のアトラス・列挙型を経由しない**。したがって、本MODの合成`IPriorityHost`実装(12.1節のマーカーインターフェース)側で`getItemStackRepresentation()`が「戻る」を意味する任意のカスタムアイコン(たとえば独自登録した専用アイテム、あるいは既存アイテムの流用)を返しさえすれば、AE2純正の描画パイプラインがそのまま正しく表示してくれる。
+
+**結論**: 11章の「化粧直し用Mixin(`TabButtonAccessor`/`WidgetContainerAccessor`相当)は不要」という結論自体は維持できるが、その理由は「1.12.2では対応する仕組みがそもそも存在しないから」ではなく、**「1.12.2の`GuiTabButton`はItemStackアイコンを標準サポートしており、独自Mixin/低レベル描画ハックなしで任意アイコンを表示できるから」**である。11章での説明はこの点で不正確だったため、ここで訂正する。実装時のTODOとしては、Mixinではなく通常のJavaコード(合成`IPriorityHost`実装の`getItemStackRepresentation()`)で完結する。
+
+- **保留事項**: カスタムアイコン用の専用アイテムを新規登録するか、既存アイテム(バニラまたはAE2)を流用するかは未確定。専用アイテムを登録する場合、テクスチャ・モデル(`item/<id>.json`)・言語ファイルの追加が必要になる(実装コストは小さいが、13章以降で正式にタスク化する)。
+
+### 12.3. `PriorityReturnTarget`相当の移植方針
+
+1.16.5の`PriorityReturnTarget`(プレイヤーUUID単位で「どこに戻るか」を保持する静的マップ、`peek()`/`take()`の使い分けが必要)は、バージョン非依存のロジックであるため1.12.2でもほぼそのまま移植できる。
+
+- データ構造: `Map<UUID, ReturnTarget>`(静的、`ReturnTarget`は`(GuiBridge, ワールド, BlockPos, AEPartLocation side)`程度の組を保持 ─ 1.12.2の`Platform.openGUI`のシグネチャ(`openGUI(EntityPlayer, TileEntity, AEPartLocation, GuiBridge)`)に合わせた形にする)。
+- 記録タイミング: Crafting Statusタブのレンチボタン押下時(経路Bの起動時、11章1.4節で要設計としていた箇所)、優先度画面を開く直前に「今開いている端末の位置」を`PriorityReturnTarget`に記録する。
+- 消費タイミング: 12.1節のサーバ側Mixin(`PacketSwitchGuisMixin`)内で、`take()`(消費・削除)を用いて記録を取り出し、その位置情報で端末画面を再度開く。
+- シングルプレイヤーの罠(1.16.5で確認済みの`peek()`/`take()`使い分けの必要性)は、クライアント・統合サーバが同一JVM上で静的状態を共有する1.12.2でも同様に発生しうる。ただし1.12.2案では「UIチェック用の`peek()`呼び出し」自体が発生する箇所が(クライアント側Mixin不要のため)存在しない見込みであり、`take()`一発で完結できる可能性が高い。この点は実装時に要検証。
+
+### 12.4. 11章の記載に対する訂正まとめ
+
+11-3節の表の該当3行を以下のように読み替える。
+
+| # | 対象 | 11章時点 | 12章での訂正 |
+|---|---|---|---|
+| 10 | `PriorityScreenMixin`相当 | 1.12.2では実装不要の見込み | **不要ではない。`PacketSwitchGuisMixin`(新規、サーバ側1本)が必要(12.1.1節)** |
+| 11 | `TabButtonAccessor`相当 | 1.12.2では実装不要の見込み | **結論(不要)は維持。ただし理由を訂正: `GuiTabButton`のItemStackアイコン機構により、そもそもMixinで介入する必要がない(12.2節)** |
+| 12 | `WidgetContainerAccessor`相当 | 1.12.2では実装不要の見込み | **結論(不要)は維持。理由は#11と同様(12.2節)** |
+
+11-3節末尾の「正味の見積もり変化」も以下のように更新する。
+
+- 新規Mixin: `TileCraftingTileMixin`(経路B、`IPriorityHost`実装、11章1.3節)に加えて、**`PacketSwitchGuisMixin`(戻り導線バイパス、12.1.1節)を追加**。
+- 新規Javaクラス: 合成`IPriorityHost`実装(マーカーインターフェース`IReturnableSyntheticPriorityHost`を含む)、`PriorityReturnTarget`相当(12.3節)、`CraftPriorityStepMenu`/`Screen`(経路A、11章2.2節、変更なし)。
+- Mixin不要と確定: `TabButtonAccessor`・`WidgetContainerAccessor`相当(理由は訂正、結論は維持)。
+
+### 12.5. 次に着手すべき順序(11-4節の更新)
+
+11-4節のリストに以下を追加する(優先度は既存項目と並列、実装フェーズでは`GuiBridge` enum PoC(11-4節#1)の直後が妥当)。
+
+5. **`PacketSwitchGuisMixin`のPoC**(12.1.1節) ─ `PacketSwitchGuis#serverPacketData`への`@Inject(cancellable=true)`が意図通り機能するか、および`ContainerPriority#getPriorityHost()`へのアクセス(`public`メソッドのため`@Accessor`不要、通常のキャスト呼び出しで到達可能なことを確認済み)を実機で検証する。
+6. **合成`IPriorityHost`実装の設計**(12.1節・12.3節) ─ CPUクラフトジョブを表す合成ホストの具体的なフィールド構成(どのCPU/どのクラスタを指すか)と、`IReturnableSyntheticPriorityHost`マーカーインターフェースの設計を、11章1.3節の`TileCraftingTileMixin`設計と合わせて確定する。
+7. **戻るボタン用アイコンアイテムの要否判断**(12.2節「保留事項」) ─ 専用アイテム新規登録 or 既存アイテム流用のどちらにするか確定する。
+
+以上、2026-07-23セッションでのGUI設計見直し結果。`Knowledge/ae2-priorityscreen-gui-design-reference.md`及び`Knowledge/ae2-priorityscreen-back-navigation-and-icon-fix.md`の内容を1.12.2の実ソース(`/tmp/ae2-1122`、AE2 `rv6-1.12`ブランチ)で裏取りし、11章の結論の一部(戻り導線Mixinの要否)を訂正した。次回セッションでは12.5節のリストに従い、まず`GuiBridge` PoCと並行して合成`IPriorityHost`実装の詳細設計に着手する。ビルド(`gradlew build`/`runClient`)は引き続き1.16.5側の検証完了までは着手しない。

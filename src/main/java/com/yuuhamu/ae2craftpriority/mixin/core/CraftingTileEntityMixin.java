@@ -1,16 +1,16 @@
 package com.yuuhamu.ae2craftpriority.mixin.core;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
+import com.yuuhamu.ae2craftpriority.client.PriorityReturnTargetClient;
 import com.yuuhamu.ae2craftpriority.priority.CraftingPriorityHostMarker;
 import com.yuuhamu.ae2craftpriority.priority.PriorityHolder;
-import com.yuuhamu.ae2craftpriority.priority.PriorityReturnTarget;
 
 import appeng.container.me.crafting.CraftingCPUContainer;
 import appeng.helpers.IPriorityHost;
@@ -30,9 +30,20 @@ import appeng.tile.crafting.CraftingTileEntity;
  *
  * <p>{@link #getContainerType()}は、優先度画面から「戻る」ボタンの遷移先を決めるための値
  * (AE2純正{@code AESubScreen}のコンストラクタが呼ぶ、クライアント側専用の呼び出し — 1.16.5実
- * ソースで他の用途が無いことを確認済み)。{@link PriorityReturnTarget}にクライアント側で記録済みの
- * 戻り先があればそれを優先し(README方法3、端末のCrafting Statusタブ経由)、無ければ既定で
- * {@code CraftingCPUContainer.TYPE}(方法2、右クリックで直接開いたCPU画面)を返す。</p>
+ * ソースで他の用途が無いことを確認済み)。{@link PriorityReturnTargetClient}にクライアント側で
+ * 記録済みの戻り先があればそれを優先し(README方法3、端末のCrafting Statusタブ経由)、無ければ
+ * 既定で{@code CraftingCPUContainer.TYPE}(方法2、右クリックで直接開いたCPU画面)を返す。</p>
+ *
+ * <p><b>2026-07-22発見・修正:</b> このMixinは{@code ae2craftpriority.mixins.json}の共通
+ * ("mixins")配列に登録されており、Dedicated Serverでも適用される。以前は本メソッドが
+ * {@code World#isRemote}ガードの内側とはいえ{@code net.minecraft.client.Minecraft}を直接
+ * 参照していたため、Mixin(SpongePowered Mixin 0.8.2)のバイトコード前処理が
+ * {@code ClassMetadataNotFoundException: net.minecraft.client.Minecraft}を投げてサーバー
+ * 起動がクラッシュしていた(実行時にその分岐へ到達するかどうかに関わらず、Mixin対象クラス
+ * へマージされるメソッド自身のバイトコードが参照する型は前処理時に解決されてしまうため)。
+ * {@code Minecraft}への参照は{@link PriorityReturnTargetClient}という独立した非Mixinクラス
+ * (通常のJVM遅延クラスロードに従う)へ切り出し、このMixinクラス自身のバイトコードからは
+ * {@code Minecraft}型への参照を完全に除去することで解決した。</p>
  */
 @Mixin(value = CraftingTileEntity.class, remap = false)
 public abstract class CraftingTileEntityMixin implements IPriorityHost, CraftingPriorityHostMarker {
@@ -43,8 +54,19 @@ public abstract class CraftingTileEntityMixin implements IPriorityHost, Crafting
     @Shadow
     protected abstract ItemStack getItemFromTile(Object obj);
 
-    @Shadow
-    public abstract boolean isRemote();
+    /** {@code CraftingTileEntity}自身は{@code getWorld()}を宣言していない
+     * ({@code CraftingTileEntity} → {@code AENetworkTileEntity} → {@code AEBaseTileEntity} →
+     * {@code net.minecraft.tileentity.TileEntity}の3階層上で宣言・javapで確認済み)。
+     * このMixin構成({@code remap = false})の{@code @Shadow}は、Mixin適用対象クラス自身が
+     * 直接宣言するメンバーしか解決できず、継承のみのメンバーは
+     * {@code InvalidMixinException}になる(本プロジェクトの{@code CraftingCPUContainerMixin}の
+     * コメントにある「1.20.1版で発生したCraftingCPUMenuMixin新設と同一の罠」と同種の問題)。
+     * {@code getWorld()}は{@code TileEntity}上でpublic宣言されているため、@Shadowを使わず
+     * {@code Object}経由の安全なダウンキャストで直接呼び出す(クライアント/サーバー判定は
+     * {@code World#isRemote}publicフィールド経由)。 */
+    private World ae2cp$getWorld() {
+        return ((TileEntity) (Object) this).getWorld();
+    }
 
     @Override
     public int getPriority() {
@@ -71,20 +93,14 @@ public abstract class CraftingTileEntityMixin implements IPriorityHost, Crafting
         // コンストラクタ(appeng.client.gui.implementations.AESubScreen)であり、これは常に
         // クライアント側のPriorityScreen構築時にのみ呼ばれる(サーバー側のSwitchGuisPacket
         // ハンドラは「現在開いているContainer自身のロケータ」を再利用するのみで、
-        // getContainerType()自体は参照しない)。そのためMinecraft.getInstance()への参照は
-        // isRemote()ガードの内側でのみ実行され、サーバー専用環境でこのメソッドが呼ばれることは
-        // 無い前提で安全(サーバー専用jarでも、この行はクラス検証時ではなく実際に呼ばれたときに
-        // 初めてリンクされるため、呼ばれない限り問題は起きない)。
-        if (this.isRemote()) {
-            final PlayerEntity localPlayer = Minecraft.getInstance().player;
-            if (localPlayer != null) {
-                // ここではまだ消費しない(peek)。PriorityScreenMixin側が「戻る」ボタンの
-                // 見た目を上書きする際に同じ記録をもう一度参照するため、最終的な消費は
-                // そちらのコンストラクタ末尾(このgetContainerType()呼び出しより後)で行う。
-                final PriorityReturnTarget.Target target = PriorityReturnTarget.peek(localPlayer.getUniqueID());
-                if (target != null) {
-                    return target.getContainerType();
-                }
+        // getContainerType()自体は参照しない)。そのためクライアント専用の戻り先解決は
+        // PriorityReturnTargetClient(このMixinとは別の非Mixinクラス)へ完全に委譲し、
+        // このメソッド自身のバイトコードにはnet.minecraft.client.Minecraftへの参照を
+        // 一切含めない(理由は上記クラスコメント、および本Mixinのクラスコメント参照)。
+        if (this.ae2cp$getWorld().isRemote) {
+            final ContainerType<?> clientTarget = PriorityReturnTargetClient.peekReturnContainerType();
+            if (clientTarget != null) {
+                return clientTarget;
             }
         }
         return CraftingCPUContainer.TYPE;

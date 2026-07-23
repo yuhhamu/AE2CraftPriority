@@ -2,7 +2,6 @@ package com.yuuhamu.ae2craftpriority.mixin.craft;
 
 import java.util.concurrent.Future;
 
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.World;
 
@@ -44,21 +43,21 @@ public abstract class CraftConfirmContainerMixin implements PriorityHolder {
     @Shadow
     public boolean autoStart;
 
-    @Shadow
-    public abstract ContainerLocator getLocator();
-
-    @Shadow
-    public abstract PlayerInventory getPlayerInventory();
+    /** {@code getLocator()}/{@code getPlayerInventory()}は{@code CraftConfirmContainer}自身では
+     * なく親クラス{@code AEBaseContainer}が直接宣言しているため@Shadow不可(未使用のため削除。
+     * 詳細は{@code Knowledge/mixin-shadow-cannot-target-inherited-methods.md}参照)。 */
 
     @Shadow
     public abstract World getWorld();
 
-    /** {@code CraftConfirmContainer}自身が持つ private メソッドを直接Shadowする。 */
+    /** {@code CraftConfirmContainer}自身が持つ private メソッドを直接Shadowする。
+     * Javaの言語仕様上 private と abstract は併用できないため、パッケージプライベート
+     * (修飾子なし)の abstract として宣言する。 */
     @Shadow
-    private abstract IGrid getGrid();
+    abstract IGrid getGrid();
 
     @Shadow
-    private abstract IActionSource getActionSrc();
+    abstract IActionSource getActionSrc();
 
     @Override
     public int ae2cp$getPriority() {

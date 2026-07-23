@@ -1,6 +1,5 @@
 package com.yuuhamu.ae2craftpriority.mixin.core;
 
-import java.util.Comparator;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
@@ -14,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.yuuhamu.ae2craftpriority.api.CraftPriorityApi;
+import com.yuuhamu.ae2craftpriority.priority.CraftingCPUPriorityComparator;
 import com.yuuhamu.ae2craftpriority.priority.PriorityOrderedHashSet;
 
 import appeng.api.networking.IGrid;
@@ -53,12 +52,7 @@ public abstract class CraftingGridCacheMixin {
     @Inject(method = "<init>", at = @At("TAIL"))
     private void ae2cp$onInit(IGrid grid, CallbackInfo ci) {
         this.craftingCPUClusters = new PriorityOrderedHashSet<CraftingCPUCluster>(
-                new Comparator<CraftingCPUCluster>() {
-                    @Override
-                    public int compare(CraftingCPUCluster a, CraftingCPUCluster b) {
-                        return Integer.compare(CraftPriorityApi.getPriority(b), CraftPriorityApi.getPriority(a));
-                    }
-                });
+                CraftingCPUPriorityComparator.INSTANCE);
         if (!ae2cp$loggedOnce) {
             ae2cp$loggedOnce = true;
             ae2cp$LOGGER.info("AE2CraftPriority: craftingCPUClusters を優先度順Setに差し替えました");

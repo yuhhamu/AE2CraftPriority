@@ -8,4 +8,11 @@ package com.yuuhamu.ae2craftpriority.priority;
 public interface CraftingStatusPriorityControl {
 
     void ae2cp$openPrioritySettings();
+
+    /**
+     * 現在追跡中のCrafting CPUの優先度(未選択時は{@link PriorityHolder#DEFAULT_PRIORITY}）。
+     * クライアント側の{@code CraftingStatusScreenMixin}が「CPU: #1@{優先度}」表示のために使う。
+     * サーバー側で{@code @GuiSync}フィールドとして自動同期される値をそのまま返す。
+     */
+    int ae2cp$getPriority();
 }

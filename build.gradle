@@ -21,9 +21,7 @@ apply plugin: 'org.spongepowered.mixin'
 version = mod_version
 group = mod_group_id
 
-base {
-    archivesName = mod_id
-}
+archivesBaseName = mod_id
 
 // AE2 1.16.5 (8.4.x-1.16.x)自体がJava 8必須のためこれに合わせる(1.18.2版のJava17から変更)
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
@@ -31,7 +29,7 @@ sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 
 minecraft {
-    mappings channel: mapping_channel, version: mapping_version
+    mappings channel: project.mapping_channel as String, version: project.mapping_version as String
 
     runs {
         client {
@@ -120,7 +118,7 @@ dependencies {
 tasks.named('processResources', ProcessResources).configure {
     filteringCharset = 'UTF-8'
 
-    var replaceProperties = [
+    def replaceProperties = [
             minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
             forge_version: forge_version, forge_version_range: forge_version_range,
             loader_version_range: loader_version_range,

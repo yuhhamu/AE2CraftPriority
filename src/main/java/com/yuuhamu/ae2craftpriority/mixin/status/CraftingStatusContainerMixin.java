@@ -7,19 +7,23 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import com.yuuhamu.ae2craftpriority.api.CraftPriorityApi;
+import com.yuuhamu.ae2craftpriority.mixin.accessor.AEBaseContainerAccessor;
+import com.yuuhamu.ae2craftpriority.mixin.accessor.CraftingCPURecordAccessor;
 import com.yuuhamu.ae2craftpriority.priority.CraftingStatusPriorityControl;
+import com.yuuhamu.ae2craftpriority.priority.PriorityHolder;
 import com.yuuhamu.ae2craftpriority.priority.PriorityReturnTarget;
 
 import appeng.api.networking.crafting.ICraftingCPU;
 import appeng.api.storage.ITerminalHost;
 import appeng.container.ContainerLocator;
 import appeng.container.ContainerOpener;
+import appeng.container.guisync.GuiSync;
 import appeng.container.implementations.PriorityContainer;
 import appeng.container.me.crafting.CraftingCPURecord;
 import appeng.container.me.crafting.CraftingStatusContainer;
@@ -50,8 +54,8 @@ import appeng.tile.crafting.CraftingTileEntity;
  * 設計であり、{@code PriorityContainer}を開いた時点のロケータは(端末ではなく)代表
  * {@code CraftingTileEntity}のものになってしまうため、この記録だけでは「戻る」ボタンの
  * 実際の遷移までは救えない(クライアント側の表示ラベル・アイコン決定までが本Mixinの責務)。
- * 実際に正しく戻るための遷移ロジックは、優先度画面側(Task #6の{@code PriorityScreenMixin})で
- * 別途対応する。</p>
+ * 実際に正しく戻るための遷移ロジックは、優先度画面側({@code PriorityScreenMixin}/
+ * {@code PriorityContainerMixin})で別途対応する。</p>
  */
 @Mixin(value = CraftingStatusContainer.class, remap = false)
 public abstract class CraftingStatusContainerMixin implements CraftingStatusPriorityControl {
@@ -61,24 +65,28 @@ public abstract class CraftingStatusContainerMixin implements CraftingStatusPrio
     @Unique
     private CraftingCPUCluster ae2cp$currentCpu;
 
-    @Shadow
-    public abstract ContainerLocator getLocator();
+    /**
+     * 現在追跡中のCPUの優先度。{@code appeng.container.guisync.DataSynchronization}が
+     * リフレクションで{@code CraftingStatusContainer}(Mixin適用後の実クラス)の全フィールドを
+     * 走査して{@code @GuiSync}アノテーションを見つける仕組みのため、Mixinで追加したこの
+     * フィールドも他のAE2純正フィールド(noCPU=6, cpuName=7)と全く同じようにクライアントへ
+     * 自動同期される(追加のパケット実装は不要)。IDは6・7と衝突しない8を使用。
+     */
+    @Unique
+    @GuiSync(8)
+    public int ae2cp$priority = PriorityHolder.DEFAULT_PRIORITY;
 
-    @Shadow
-    public abstract PlayerInventory getPlayerInventory();
-
-    @Shadow
-    protected abstract boolean isClient();
-
-    @Shadow
-    protected abstract void registerClientAction(String name, Runnable callback);
-
-    @Shadow
-    protected abstract void sendClientAction(String action);
+    /** {@code getLocator()}/{@code getPlayerInventory()}/{@code isClient()}/
+     * {@code registerClientAction()}/{@code sendClientAction()}はいずれも
+     * {@code CraftingStatusContainer}(および親の{@code CraftingCPUContainer})自身ではなく、
+     * さらに上の{@code AEBaseContainer}が直接宣言しているため@Shadow不可。
+     * {@link AEBaseContainerAccessor}経由で呼び出す(詳細は
+     * {@code Knowledge/mixin-shadow-cannot-target-inherited-methods.md}参照)。 */
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void ae2cp$registerAction(int id, PlayerInventory ip, ITerminalHost te, CallbackInfo ci) {
-        this.registerClientAction(ACTION_OPEN_PRIORITY, this::ae2cp$openPrioritySettings);
+        ((AEBaseContainerAccessor) (Object) this).ae2cp$invokeRegisterClientAction(ACTION_OPEN_PRIORITY,
+                this::ae2cp$openPrioritySettings);
     }
 
     /**
@@ -87,21 +95,30 @@ public abstract class CraftingStatusContainerMixin implements CraftingStatusPrio
      */
     @Inject(method = "onCPUSelectionChanged", at = @At("HEAD"))
     private void ae2cp$captureCurrentCpu(CraftingCPURecord cpuRecord, boolean cpusAvailable, CallbackInfo ci) {
-        final ICraftingCPU cpu = cpuRecord != null ? cpuRecord.getCpu() : null;
+        final ICraftingCPU cpu = cpuRecord != null
+                ? ((CraftingCPURecordAccessor) (Object) cpuRecord).ae2cp$invokeGetCpu()
+                : null;
         this.ae2cp$currentCpu = cpu instanceof CraftingCPUCluster ? (CraftingCPUCluster) cpu : null;
+        this.ae2cp$priority = CraftPriorityApi.getPriority(this.ae2cp$currentCpu);
+    }
+
+    @Override
+    public int ae2cp$getPriority() {
+        return this.ae2cp$priority;
     }
 
     @Override
     public void ae2cp$openPrioritySettings() {
-        if (this.isClient()) {
-            final PlayerEntity localPlayer = this.getPlayerInventory().player;
+        final AEBaseContainerAccessor accessor = (AEBaseContainerAccessor) (Object) this;
+        if (accessor.ae2cp$invokeIsClient()) {
+            final PlayerEntity localPlayer = accessor.ae2cp$invokeGetPlayerInventory().player;
             if (localPlayer != null) {
                 // PriorityScreen構築(クライアント側)時にCraftingTileEntityMixin#getContainerType()
                 // が読み取れるよう、サーバー往復を待たずここで先に記録しておく。
                 PriorityReturnTarget.set(localPlayer.getUniqueID(), CraftingStatusContainer.TYPE,
-                        this.getLocator());
+                        accessor.ae2cp$invokeGetLocator());
             }
-            this.sendClientAction(ACTION_OPEN_PRIORITY);
+            accessor.ae2cp$invokeSendClientAction(ACTION_OPEN_PRIORITY);
             return;
         }
 
@@ -118,13 +135,14 @@ public abstract class CraftingStatusContainerMixin implements CraftingStatusPrio
             return;
         }
 
-        final PlayerEntity player = this.getPlayerInventory().player;
+        final PlayerEntity player = accessor.ae2cp$invokeGetPlayerInventory().player;
         if (!(player instanceof ServerPlayerEntity)) {
             return;
         }
 
         // サーバー側でも同じ戻り先を独立に記録する(クライアント側の記録とは別プロセス/別インスタンス)。
-        PriorityReturnTarget.set(player.getUniqueID(), CraftingStatusContainer.TYPE, this.getLocator());
+        PriorityReturnTarget.set(player.getUniqueID(), CraftingStatusContainer.TYPE,
+                accessor.ae2cp$invokeGetLocator());
 
         final ContainerLocator locator = ContainerLocator.forTileEntity(representative);
         ContainerOpener.openContainer(PriorityContainer.TYPE, player, locator);

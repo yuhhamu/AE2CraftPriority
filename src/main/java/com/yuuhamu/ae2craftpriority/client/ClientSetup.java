@@ -3,6 +3,7 @@ package com.yuuhamu.ae2craftpriority.client;
 import java.io.FileNotFoundException;
 
 import net.minecraft.client.gui.ScreenManager;
+import net.minecraft.client.gui.ScreenManager.IScreenFactory;
 
 import com.yuuhamu.ae2craftpriority.menu.CraftPriorityStepContainer;
 
@@ -27,7 +28,8 @@ public final class ClientSetup {
     }
 
     public static void init() {
-        ScreenManager.registerFactory(CraftPriorityStepContainer.TYPE, (container, playerInv, title) -> {
+        final IScreenFactory<CraftPriorityStepContainer, CraftPriorityStepScreen> factory = (container, playerInv,
+                title) -> {
             final ScreenStyle style;
             try {
                 style = StyleManager.loadStyleDoc(CRAFT_PRIORITY_STEP_STYLE);
@@ -38,6 +40,7 @@ public final class ClientSetup {
                 throw new RuntimeException("Failed to read Screen JSON file: " + CRAFT_PRIORITY_STEP_STYLE, e);
             }
             return new CraftPriorityStepScreen(container, playerInv, title, style);
-        });
+        };
+        ScreenManager.registerFactory(CraftPriorityStepContainer.TYPE, factory);
     }
 }

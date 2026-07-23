@@ -3,7 +3,6 @@ package com.yuuhamu.ae2craftpriority.mixin.craft;
 import java.util.concurrent.Future;
 
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.World;
 
@@ -13,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import com.yuuhamu.ae2craftpriority.mixin.accessor.AEBaseContainerAccessor;
 import com.yuuhamu.ae2craftpriority.menu.CraftPriorityStepContainer;
 import com.yuuhamu.ae2craftpriority.priority.PriorityHolder;
 
@@ -51,17 +51,11 @@ public abstract class CraftAmountContainerMixin {
     @Shadow
     private IAEItemStack itemToCreate;
 
-    @Shadow
-    protected abstract boolean isServer();
-
-    @Shadow
-    public abstract Object getTarget();
-
-    @Shadow
-    public abstract ContainerLocator getLocator();
-
-    @Shadow
-    public abstract PlayerInventory getPlayerInventory();
+    /** {@code isServer()}/{@code getTarget()}/{@code getLocator()}/{@code getPlayerInventory()}は
+     * いずれも{@code CraftAmountContainer}自身ではなく親クラス{@code AEBaseContainer}が直接
+     * 宣言しているため、このMixinから直接{@code @Shadow}できない(javapで確認済み。詳細は
+     * {@code Knowledge/mixin-shadow-cannot-target-inherited-methods.md}参照)。
+     * {@link AEBaseContainerAccessor}経由で呼び出す。 */
 
     @Shadow
     public abstract IGrid getGrid();
@@ -72,18 +66,28 @@ public abstract class CraftAmountContainerMixin {
     @Shadow
     public abstract IActionSource getActionSrc();
 
-    @Shadow
-    public abstract void detectAndSendChanges();
+    /** {@code detectAndSendChanges()}は{@code CraftAmountContainer}自身が直接宣言(オーバーライド、
+     * {@code super.detectAndSendChanges()}呼び出しあり)しているにも関わらず、javapでの直接宣言
+     * 確認済みのバイトコードに対して{@code @Shadow}すると実機起動時に
+     * {@code InvalidMixinException: was not located in the target class}になった(getGrid/getWorld/
+     * getActionSrcなど、親クラスをオーバーライドしていない他のメンバーでは発生しない)。原因未特定
+     * (Mixin annotation processor 0.8.0とランタイム0.8.2のバージョン差異が疑わしいが未確認)。
+     * @Shadowを使わず{@code CraftAmountContainer}自身への安全なダウンキャストで直接呼び出す
+     * ことで回避。詳細は{@code Knowledge/mixin-shadow-cannot-target-inherited-methods.md}参照。 */
+    private void ae2cp$detectAndSendChanges() {
+        ((CraftAmountContainer) (Object) this).detectAndSendChanges();
+    }
 
     @Inject(method = "confirm", at = @At("HEAD"), cancellable = true)
     private void ae2cp$openPriorityStepInstead(int amount, boolean autoStart, CallbackInfo ci) {
-        if (!this.isServer()) {
+        final AEBaseContainerAccessor accessor = (AEBaseContainerAccessor) (Object) this;
+        if (!accessor.ae2cp$invokeIsServer()) {
             // クライアント側実行(ConfirmAutoCraftPacketの送信のみ)はバニラのまま。
             return;
         }
         ci.cancel();
 
-        final Object target = this.getTarget();
+        final Object target = accessor.ae2cp$invokeGetTarget();
         if (!(target instanceof IActionHost)) {
             return;
         }
@@ -105,12 +109,12 @@ public abstract class CraftAmountContainerMixin {
             futureJob = cg.beginCraftingJob(this.getWorld(), this.getGrid(), this.getActionSrc(), this.itemToCreate,
                     null);
 
-            final ContainerLocator locator = this.getLocator();
-            final PlayerEntity playerEntity = this.getPlayerInventory().player;
+            final ContainerLocator locator = accessor.ae2cp$invokeGetLocator();
+            final PlayerEntity playerEntity = accessor.ae2cp$invokeGetPlayerInventory().player;
             if (locator != null && playerEntity instanceof ServerPlayerEntity) {
                 CraftPriorityStepContainer.open((ServerPlayerEntity) playerEntity, locator, this.itemToCreate.copy(),
                         futureJob, autoStart, PriorityHolder.DEFAULT_PRIORITY);
-                this.detectAndSendChanges();
+                this.ae2cp$detectAndSendChanges();
             } else {
                 futureJob.cancel(true);
             }

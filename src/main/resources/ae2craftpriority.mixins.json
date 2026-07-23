@@ -12,13 +12,18 @@
     "core.CraftingGridCacheMixin",
     "craft.CraftAmountContainerMixin",
     "craft.CraftConfirmContainerMixin",
-    "status.CraftingStatusContainerMixin"
+    "status.CraftingStatusContainerMixin",
+    "status.PriorityContainerMixin",
+    "accessor.CraftingCPURecordAccessor",
+    "accessor.AEBaseContainerAccessor"
   ],
   "client": [
     "status.CraftingCPUScreenMixin",
+    "status.CraftingStatusScreenMixin",
     "status.PriorityScreenMixin",
     "accessor.TabButtonAccessor",
-    "accessor.WidgetContainerAccessor"
+    "accessor.WidgetContainerAccessor",
+    "accessor.ButtonAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

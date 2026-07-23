@@ -55,10 +55,9 @@ repositories {
     mavenCentral()
     maven {
         // AE2 1.12.2(rv6)配布元。1.16.5移植版と同じCurseMaven経由の取得パターン。
+        // 注: content{includeGroup...}によるリポジトリコンテンツフィルタリングDSLはGradle 5.1+の機能で
+        // Gradle 4.8には存在しないため使用不可(2026-07-23、実ビルドで検出・削除)。
         url = 'https://cursemaven.com'
-        content {
-            includeGroup 'curse.maven'
-        }
     }
     maven {
         // MixinBooter配布元
@@ -67,7 +66,11 @@ repositories {
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // 注: ForgeGradle 2.x(FG2)では`minecraft { version = ... }`ブロック(上記)だけで
+    // Minecraft+Forge依存が解決される。`dependencies { minecraft "..." }`はFG3+の書式で、
+    // FG2には存在しないメソッドのためビルド失敗する(2026-07-23、実ビルドで検出・削除。
+    // AE2本体〔/tmp/ae2-1122〕のbuild.gradleでも同様にminecraft{}ブロックのみで
+    // dependencies.minecraft宣言は無いことを確認済み)。
 
     deobfCompile "curse.maven:applied-energistics-2-${ae2_curseforge_project_id}:${ae2_curseforge_file_id}"
 

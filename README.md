@@ -26,10 +26,21 @@ READMEを参照してください(1.12.2版がリリースされた際も、こ�
 
 ## Current Status (as of 2026-07-23) / 現在の状態(2026-07-23時点)
 
-**Preparation is complete up to just before the first build. The actual build and an in-game launch test have not been performed yet** (the build environment was busy with the 1.16.5 port at the time).
+**The Mixin bootstrap PoC has been built and launch-tested successfully** (1.16.5 development
+wrapped up, so the build/test tooling switched over to this branch). `gradlew build` and an
+actual PrismLauncher launch both succeeded; `core.PocBootstrapLogMixin`'s log line was confirmed
+in `latest.log`, and Forge reported "Forge Mod Loader has successfully loaded 11 mods" with no
+crash. Fixed several legacy ForgeGradle 2.3 / Gradle 4.8 build issues found along the way (see
+below) and confirmed that MixinBooter must be deployed as its own jar in the instance's `mods/`
+folder (a compile-time dependency alone is not picked up as a coremod).
 
-**ビルド直前まで準備完了。実際のビルド・実機起動テストは未実施(1.16.5移植でビルド環境を使用中の
-ため)。**
+**Mixinブートストラップ PoC のビルド・実機起動テストに成功しました**(1.16.5の開発が終了した
+ため、ビルド・テスト環境をこのブランチに切り替え)。`gradlew build`・実際のPrismLauncher起動の
+両方が成功し、`latest.log`で`core.PocBootstrapLogMixin`のログ出力を確認、Forgeも
+「Forge Mod Loader has successfully loaded 11 mods」とクラッシュなしで報告。途中で見つかった
+旧ForgeGradle 2.3 / Gradle 4.8特有のビルド不具合を複数修正した(下記参照)ほか、MixinBooterは
+コンパイル時依存として宣言するだけでは不十分で、実機のインスタンスの`mods/`フォルダに
+jarとして別途配置する必要があることを確認した(コアmodとして認識されないため)。
 
 - Design document: [`design/PORT-DESIGN-1.12.2.md`](design/PORT-DESIGN-1.12.2.md)
   - Sections 3–10: initial design written 2026-07-20.
@@ -76,11 +87,29 @@ READMEを参照してください(1.12.2版がリリースされた際も、こ�
 
 ## Unverified / To-Do Items / 未検証・要確認のTODO
 
-- **The Mixin bootstrap PoC itself has not been verified yet** (design section 8, step 1). Run
-  `gradlew build` or `runClient` and confirm that `core.PocBootstrapLogMixin`'s log line appears
-  in the startup log.
-- It's unconfirmed whether the MixinBooter jar can be used as-is as a Gradle dependency, or
-  whether `deobfCompile` is required (see the TODO comment in `build.gradle`).
+- ~~The Mixin bootstrap PoC itself has not been verified yet~~ **Verified 2026-07-23**: built and
+  launch-tested successfully via mod-test-runner (profile `craftpriority112`). See "Current
+  Status" above and the build-fix notes below.
+- Build fixes discovered while getting the PoC to build/launch (2026-07-23, all applied in this
+  commit):
+  - The project was missing `gradlew` / `gradlew.bat` / `gradle/wrapper/gradle-wrapper.jar`
+    (only `gradle-wrapper.properties` existed) — without them, mod-test-runner silently fell back
+    to whatever Gradle happened to be cached globally (6.8.3), which is incompatible with
+    ForgeGradle 2.3. Regenerated the wrapper scripts/jar (version-agnostic bootstrap; the target
+    Gradle 4.8 comes from `gradle-wrapper.properties`, unchanged).
+  - `mixingradle_version` must be `0.6-SNAPSHOT`, not `0.7-SNAPSHOT` — 0.7-SNAPSHOT explicitly
+    refuses to apply on projects with a `genSrgs` task (i.e. any ForgeGradle 2.x project).
+  - `dependencies { minecraft "net.minecraftforge:forge:..." }` doesn't exist in ForgeGradle 2.x —
+    that's ForgeGradle 3+ syntax. The `minecraft { version = "..." }` extension block alone is
+    sufficient (confirmed by cross-checking AE2's own 1.12.2 `build.gradle`).
+  - The `content { includeGroup '...' }` repository content-filtering DSL doesn't exist in
+    Gradle 4.8 (added in a much later Gradle version) — removed from the CurseMaven repository
+    block.
+  - MixinBooter must be deployed as a standalone jar inside the target instance's `mods/` folder.
+    Declaring it as a `compile` dependency only puts it on the runtime classpath — Forge's coremod
+    discovery scans actual files under `mods/`, so without a physical jar there, no coremod (and
+    therefore no Mixin) gets loaded at all, even though the build succeeds and the game boots
+    without error.
 - It's unconfirmed whether MixinBooter needs to be declared as a Forge mod dependency in
   `mcmod.info` (it hasn't been added there yet).
 - The exact field layout for the synthetic `IPriorityHost` implementation (for CPU crafting jobs)
@@ -88,10 +117,27 @@ READMEを参照してください(1.12.2版がリリースされた際も、こ�
 - Whether the back button's icon should use a newly registered dedicated item or reuse an existing
   one hasn't been decided (design section 12.5, item 7).
 
-- **Mixin導入のPoC自体が未検証**(design 8章手順1)。`gradlew build` または `runClient` を実行し、
-  `core.PocBootstrapLogMixin`のログが起動ログに出るかを確認すること。
-- MixinBooterのjarがそのままGradle依存として使える配布形態か(`deobfCompile`が必要か等)は未確認
-  (`build.gradle`内のTODOコメント参照)。
+- ~~Mixin導入のPoC自体が未検証~~ **2026-07-23検証済み**: mod-test-runner(プロファイル
+  `craftpriority112`)経由でビルド・実機起動テストに成功。詳細は上記「現在の状態」および
+  下記のビルド不具合修正メモを参照。
+- PoCのビルド・起動にこぎつけるまでに見つかったビルド不具合(2026-07-23、いずれもこのコミットで修正済み):
+  - プロジェクトに`gradlew`/`gradlew.bat`/`gradle/wrapper/gradle-wrapper.jar`が欠けていた
+    (`gradle-wrapper.properties`のみ存在)。これが無いと、mod-test-runnerはグローバルに
+    たまたまキャッシュされていたGradle(6.8.3)へ黙ってフォールバックしてしまい、
+    ForgeGradle 2.3と非互換のため失敗する。wrapperスクリプト/jarを再生成した
+    (このjar自体はバージョン非依存のブートストラップで、実際に使うGradle 4.8は
+    `gradle-wrapper.properties`側の設定のまま変更なし)。
+  - `mixingradle_version`は`0.7-SNAPSHOT`ではなく`0.6-SNAPSHOT`が必要。0.7-SNAPSHOTは
+    `genSrgs`タスク(=ForgeGradle 2.x系プロジェクト全般)を検出すると明示的に適用を拒否する。
+  - `dependencies { minecraft "net.minecraftforge:forge:..." }`はForgeGradle 2.xには存在しない
+    (ForgeGradle 3+の書式)。`minecraft { version = "..." }`拡張ブロックだけで十分
+    (AE2本体の1.12.2版build.gradleでも同様の構成であることを確認済み)。
+  - リポジトリのコンテンツフィルタリングDSL`content { includeGroup '...' }`はGradle 4.8には
+    存在しない(もっと新しいGradleバージョンで追加された機能)。CurseMavenリポジトリ設定から削除。
+  - MixinBooterは対象インスタンスの`mods/`フォルダに単独のjarとして配置する必要がある。
+    `compile`依存として宣言するだけではランタイムのクラスパスに乗るだけで、Forgeのコアmod検出は
+    `mods/`配下の実ファイルを走査する方式のため、物理的なjarが無いとコアmod(ひいてはMixin)が
+    一切ロードされない(ビルドは成功し、ゲームもエラーなく起動してしまうため気づきにくい)。
 - MixinBooterのForge modid・mcmod.infoでの依存宣言要否は未確認(現状mcmod.infoには追加していない)。
 - 合成`IPriorityHost`実装(CPUクラフトジョブ用)の具体的なフィールド構成が未確定(design 12.5節#6)。
 - 戻るボタン用アイコンの専用アイテム新規登録 or 既存アイテム流用の判断が未確定(design 12.5節#7)。

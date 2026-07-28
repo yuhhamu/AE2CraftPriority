@@ -15,6 +15,13 @@ pluginManagement {
 }
 plugins {
     id 'net.neoforged.moddev.repositories'
+    // 暫定回避策(2026-07-27): mc-moddev-mcp-serverのビルドコンテナにはZ:\Claude\Tools\Java\jdk-21が
+    // 到達不能(コンテナがZ:\Claude\Projects以外をマウントしていない、バックエンド確認依頼済み)。
+    // かつコンテナ内蔵JDKはJava17のみでこのプロジェクトが要求するJava21が無いため、
+    // Gradle自身にコンテナ内でJDK21を取得させる。Windows側Tools\運用ポリシーとは無関係な
+    // コンテナ内ビルド限定の措置。マウント修正後は削除してgradle.propertiesのauto-downloadも
+    // falseへ戻すこと。
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
 }
 dependencyResolutionManagement {
     repositories {

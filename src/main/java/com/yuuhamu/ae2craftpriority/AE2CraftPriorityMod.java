@@ -9,7 +9,6 @@ import com.yuuhamu.ae2craftpriority.menu.CraftPriorityStepMenu;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 @Mod(AE2CraftPriorityMod.MODID)
 public class AE2CraftPriorityMod {
@@ -23,7 +22,6 @@ public class AE2CraftPriorityMod {
             AdvancedAeCompat.init();
         }
 
-        modEventBus.addListener(
-                (final FMLClientSetupEvent event) -> event.enqueueWork(() -> ClientSetup.init()));
+        modEventBus.addListener(ClientSetup::init);
     }
 }

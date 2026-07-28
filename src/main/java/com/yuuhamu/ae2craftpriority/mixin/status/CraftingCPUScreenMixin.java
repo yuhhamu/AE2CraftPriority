@@ -14,13 +14,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import net.neoforged.neoforge.network.PacketDistributor;
+
 import appeng.client.gui.Icon;
 import appeng.client.gui.me.crafting.CraftingCPUScreen;
 import appeng.client.gui.style.ScreenStyle;
 import appeng.client.gui.widgets.IconButton;
 import appeng.core.localization.GuiText;
-import appeng.core.sync.network.NetworkHandler;
-import appeng.core.sync.packets.SwitchGuisPacket;
+import appeng.core.network.serverbound.SwitchGuisPacket;
 import appeng.menu.implementations.PriorityMenu;
 import appeng.menu.me.crafting.CraftingCPUMenu;
 
@@ -44,7 +45,7 @@ public abstract class CraftingCPUScreenMixin extends AbstractContainerScreen<Cra
         this.ae2cp$priorityButton = new IconButton(btn -> ae2cp$openPriority()) {
             @Override
             protected Icon getIcon() {
-                return Icon.WRENCH;
+                return Icon.PRIORITY;
             }
         };
         this.ae2cp$priorityButton.setMessage(GuiText.Priority.text());
@@ -58,7 +59,7 @@ public abstract class CraftingCPUScreenMixin extends AbstractContainerScreen<Cra
         } else {
 
             PriorityBackIconOverride.clear();
-            NetworkHandler.instance().sendToServer(SwitchGuisPacket.openSubMenu(PriorityMenu.TYPE));
+            PacketDistributor.sendToServer(SwitchGuisPacket.openSubMenu(PriorityMenu.TYPE));
         }
     }
 

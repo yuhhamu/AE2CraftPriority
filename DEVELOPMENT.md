@@ -257,3 +257,21 @@ Windows PowerShell 内部エラー。マネージ Windows PowerShell の読み�
 解決するまで**意図的に残置**している(解決後の再検証で再度使う可能性があるため)。
 ブロッカー解決後、正常にビルド・起動確認が取れた時点でこれらを削除し、`build.gradle`を
 モジュール本体のみのクリーンな状態に戻す。
+
+## 2026-07-30: GUI配置修正(1.21.1の新テーマ対応)
+
+実機(ユーザー自身のWindows端末)でのプレイ確認により、以下2点のGUI配置不具合が見つかり修正した。
+comment-and-copy-policy(実装コメント除去ルール)に従い、ソース中のコメントは削除しこちらに記録する。
+
+- **`CraftingCPUScreenMixin`**: AE2 19.x系で新規追加された「一時停止/再開」(`suspend`)ボタンが
+  原因。1.20.1版のAE2には`suspend`ボタンが存在せず、当時は「`cancel`ボタンの左には何もない」
+  という前提で`ae2cp$priorityButton`(優先度アイコンボタン)を`cancel`基準の座標
+  (`cancel.getX() - 4 - 16`)に配置していた。19.2.17では`suspend`が`cancel`の左に既に配置されて
+  いるため、そのままだと重なって表示される。`suspend`フィールドを`@Shadow`し、`priorityButton`の
+  座標基準を`cancel`から`suspend`に変更して解消(AE2実ソース `neoforge/v19.2.17` タグの
+  `CraftingCPUScreen.java`で`private final Button suspend;`の実在を確認済み)。
+- **`CraftPriorityStepScreen`**: 「次へ」ボタンをvanilla Minecraftの`Button`で実装していたため、
+  周囲のAE2スタイルUIから浮いて見えていた(1.21.1の新GUIテーマで特に目立つようになった)。
+  AE2自身が`CraftingCPUScreen`の`priorityButton`等で使っているのと同じ`appeng.client.gui.widgets.IconButton`
+  に置き換え、`Icon.ENTER`アイコン(AE2実ソース`Icon.java`で確認)で描画するようにした。
+  ラベルはボタン上のツールチップとして表示される形に変わる。

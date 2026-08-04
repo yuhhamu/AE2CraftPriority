@@ -1,20 +1,21 @@
 package com.yuuhamu.ae2craftpriority.client;
 
 import com.yuuhamu.ae2craftpriority.menu.CraftPriorityStepMenu;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 import appeng.client.gui.AEBaseScreen;
+import appeng.client.gui.Icon;
 import appeng.client.gui.NumberEntryType;
 import appeng.client.gui.implementations.AESubScreen;
 import appeng.client.gui.style.ScreenStyle;
+import appeng.client.gui.widgets.IconButton;
 import appeng.client.gui.widgets.NumberEntryWidget;
 
 public class CraftPriorityStepScreen extends AEBaseScreen<CraftPriorityStepMenu> {
 
     private final NumberEntryWidget priority;
-    private final Button nextButton;
+    private final IconButton nextButton;
 
     public CraftPriorityStepScreen(CraftPriorityStepMenu menu, Inventory playerInventory, Component title,
             ScreenStyle style) {
@@ -27,9 +28,13 @@ public class CraftPriorityStepScreen extends AEBaseScreen<CraftPriorityStepMenu>
         this.priority.setLongValue(menu.getPriorityValue());
         this.priority.setOnConfirm(this::confirm);
 
-        this.nextButton = Button.builder(Component.translatable("gui.ae2craftpriority.next"), b -> confirm())
-                .bounds(0, 0, 50, 20)
-                .build();
+        this.nextButton = new IconButton(b -> confirm()) {
+            @Override
+            protected Icon getIcon() {
+                return Icon.ENTER;
+            }
+        };
+        this.nextButton.setMessage(Component.translatable("gui.ae2craftpriority.next"));
 
         setTextContent("priority_insertion_hint",
                 Component.translatable("gui.ae2craftpriority.priority_hint_high"));

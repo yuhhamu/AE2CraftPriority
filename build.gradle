@@ -73,6 +73,10 @@ tasks.withType(JavaCompile).configureEach {
 dependencies {
     implementation "maven.modrinth:ae2:${ae2_version}"
 
+    // AE2自身のmandatory依存(guideme)。無いとサーバー/クライアント起動時に
+    // ModSorterがMissing mandatory dependenciesでロード自体を拒否する。
+    implementation "maven.modrinth:guideme:${guideme_version}"
+
     // AdvancedAE対応(任意依存): コンパイル時にクラス参照を解決するためだけに必要。
     // ランタイムでは同梱しない(neoforge.mods.tomlでtype="OPTIONAL"の依存として宣言)。
     compileOnly "maven.modrinth:advancedae:${advancedae_version}"
@@ -93,20 +97,4 @@ tasks.named('processResources', ProcessResources).configure {
     filesMatching(['META-INF/neoforge.mods.toml']) {
         expand replaceProperties + [project: project]
     }
-}
-
-// ===== 一時診断タスク(Windows Sockets error 10106の原因調査用、調査後に削除すること) =====
-tasks.register('diagWinsockCatalog', Exec) {
-    commandLine 'C:\\Windows\\System32\\cmd.exe', '/c', 'C:\\Windows\\System32\\netsh.exe winsock show catalog > "Z:\\Claude\\Projects\\MinecraftMods\\AE2CraftPriority-1.21.1\\diag\\winsock-catalog.txt" 2>&1'
-    ignoreExitValue = true
-}
-tasks.register('diagSecurityProducts', Exec) {
-    commandLine 'C:\\Windows\\System32\\cmd.exe', '/c',
-            'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoProfile -ExecutionPolicy Bypass -File "Z:\\Claude\\Projects\\MinecraftMods\\AE2CraftPriority-1.21.1\\diag\\check-security.ps1" > "Z:\\Claude\\Projects\\MinecraftMods\\AE2CraftPriority-1.21.1\\diag\\ps-run-log.txt" 2>&1'
-    ignoreExitValue = true
-}
-tasks.register('diagCrypto', Exec) {
-    commandLine 'C:\\Windows\\System32\\cmd.exe', '/c',
-            'Z:\\Claude\\Projects\\MinecraftMods\\AE2CraftPriority-1.21.1\\diag\\check-crypto.bat > "Z:\\Claude\\Projects\\MinecraftMods\\AE2CraftPriority-1.21.1\\diag\\crypto-log.txt" 2>&1'
-    ignoreExitValue = true
 }

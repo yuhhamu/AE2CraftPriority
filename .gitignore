@@ -21,3 +21,8 @@ Thumbs.db
 
 # runtime/local state
 .state/
+
+# secrets
+.env
+*credentials*
+*.pem

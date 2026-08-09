@@ -13,11 +13,13 @@ import appeng.menu.ISubMenu;
 import appeng.menu.MenuOpener;
 import appeng.menu.implementations.MenuTypeBuilder;
 import appeng.menu.locator.MenuHostLocator;
+import appeng.menu.me.crafting.CraftAmountMenu;
 import appeng.menu.me.crafting.CraftConfirmMenu;
 
 public class CraftPriorityStepMenu extends AEBaseMenu implements ISubMenu {
 
     private static final String ACTION_CONFIRM = "ae2cp$confirmPriority";
+    private static final String ACTION_BACK = "ae2cp$back";
 
     /**
      * {@code open(...)}呼び出しからこの画面を開く直前に渡された初期優先度を、
@@ -47,6 +49,7 @@ public class CraftPriorityStepMenu extends AEBaseMenu implements ISubMenu {
         super(TYPE, id, ip, host);
         this.host = host;
         registerClientAction(ACTION_CONFIRM, Integer.class, this::confirmPriority);
+        registerClientAction(ACTION_BACK, this::goBack);
     }
 
     @Override
@@ -90,5 +93,32 @@ public class CraftPriorityStepMenu extends AEBaseMenu implements ISubMenu {
             confirm.planJob(this.whatToCraft, this.amount, CalculationStrategy.REPORT_MISSING_ITEMS);
             broadcastChanges();
         }
+    }
+
+    /**
+     * 優先度設定画面から、ひとつ前の段階である数量設定画面({@code CraftAmountMenu})へ戻る。
+     *
+     * <p>AE2標準のISubMenu用「戻る」ボタン({@code AESubScreen.addBackButton}
+     * → {@code SwitchGuisPacket.returnToParentMenu()})は、このメニューのホスト
+     * ({@code ISubMenuHost})本来のメインメニュー(クラフトターミナル等)へ戻る実装であり、
+     * このMODが数量設定とCPU選択の間に独自に挟んでいるウィザードの前段には戻れない。
+     * また、そのボタンのツールチップにはホストのメインメニュー名(例:クラフトターミナル)が
+     * そのまま表示されてしまう。そのため専用の戻る処理をここに実装し、
+     * {@code CraftPriorityStepScreen} 側でも独自の戻るボタンに置き換えている。
+     */
+    public void goBack() {
+        if (isClientSide()) {
+            sendClientAction(ACTION_BACK);
+            return;
+        }
+
+        var locator = getLocator();
+        var player = getPlayer();
+        if (locator == null || this.whatToCraft == null) {
+            this.host.returnToMainMenu(player, this);
+            return;
+        }
+
+        CraftAmountMenu.open((ServerPlayer) player, locator, this.whatToCraft, this.amount);
     }
 }

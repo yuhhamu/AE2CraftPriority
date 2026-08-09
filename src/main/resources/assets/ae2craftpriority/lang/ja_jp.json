@@ -1,4 +1,5 @@
 {
   "gui.ae2craftpriority.next": "次へ",
+  "gui.ae2craftpriority.back": "戻る",
   "gui.ae2craftpriority.priority_hint_high": "数値が大きいほど優先される"
 }

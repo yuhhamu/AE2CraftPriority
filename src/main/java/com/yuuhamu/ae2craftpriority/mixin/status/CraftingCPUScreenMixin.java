@@ -75,7 +75,15 @@ public abstract class CraftingCPUScreenMixin extends AbstractContainerScreen<Cra
         if (!this.children().contains(this.ae2cp$priorityButton)) {
             this.addRenderableWidget(this.ae2cp$priorityButton);
         }
-        this.ae2cp$priorityButton.setX(this.suspend.getX() - 4 - 16);
-        this.ae2cp$priorityButton.setY(this.suspend.getY() + (this.suspend.getHeight() - 16) / 2);
+        // NOTE: 以前は "16" をボタン自身の幅・高さの決め打ち値として使っていたが、
+        // これは appeng.client.gui.widgets.IconButton のデフォルトサイズ(16x16)を
+        // 前提にした暗黙のマジックナンバーであり、ボタンの実際のサイズと食い違うと
+        // suspend/cancelボタンに対する位置ズレ(数px下にずれる・大きさが合わない)の
+        // 原因になる。ボタン自身の getWidth()/getHeight() を使って算出することで、
+        // 実際の描画サイズと常に整合させる。
+        int w = this.ae2cp$priorityButton.getWidth();
+        int h = this.ae2cp$priorityButton.getHeight();
+        this.ae2cp$priorityButton.setX(this.suspend.getX() - 4 - w);
+        this.ae2cp$priorityButton.setY(this.suspend.getY() + (this.suspend.getHeight() - h) / 2);
     }
 }

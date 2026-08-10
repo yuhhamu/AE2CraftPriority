@@ -6,11 +6,11 @@
 An addon mod for Applied Energistics 2 (AE2) that adds crafting **priority** to its auto-crafting system — NeoForge / Minecraft 1.21.1 port.
 AE2(Applied Energistics 2)の自動クラフトに「優先度」を追加するアドオンMODです — NeoForge / Minecraft 1.21.1 版。
 
-## Status / 現在の状態
+## Status / 現在の状況
 
-🚧 **In Development (alpha)**: This is a forward-port from the Forge/1.20.1 version (see the [main repository](https://github.com/yuhhamu/AE2CraftPriority)). It builds and boots successfully, but in-world testing (actual crafting jobs, priority ordering under contention, addon-mod interoperability) is still limited. Use with caution.
+🧪 **Beta**: This is a forward-port from the Forge/1.20.1 version (see the [main repository](https://github.com/yuhhamu/AE2CraftPriority)). Core features are implemented, and the mod builds, boots, and has been verified in-game, including its priority UI on both AE2's native Crafting CPU screen and AdvancedAE's Quantum Computer screen. In-world testing of priority ordering under heavy crafting contention is still ongoing — feedback and bug reports are welcome.
 
-🚧 **開発中(alpha)**: Forge/1.20.1版([メインリポジトリ](https://github.com/yuhhamu/AE2CraftPriority))からのフォワードポートです。ビルド・起動は成功していますが、実際のワールド内でのクラフトジョブ・優先度制御・他アドオンMODとの組み合わせについてはまだ検証が限定的です。ご利用の際はご注意ください。
+🧪 **ベータ版**: Forge/1.20.1版([メインリポジトリ](https://github.com/yuhhamu/AE2CraftPriority))からのフォワードポートです。主要機能は実装済みで、ビルド・起動・実機での動作確認(AE2純正のCrafting CPU画面、AdvancedAEのQuantum Computer画面双方での優先度UIを含む)を行っています。多数のクラフトジョブが競合する状況での優先度制御そのものについては引き続き検証中です。不具合等ありましたらご報告ください。
 
 ## What Does This Mod Do? / これは何をするMODですか?
 
@@ -19,10 +19,10 @@ In AE2's auto-crafting, multiple crafting jobs can end up competing for the same
 - It never interrupts a machine that's already processing something — it only decides which job goes next once a machine becomes free.
 - This is a best-effort, network-wide adjustment, not a strict guarantee.
 
-AE2の自動クラフトでは、複数のクラフトジョブが同じ機械(圧縮機・溶鉱炉など、Pattern Provider経由で繋がった実機械)を取り合うことがあります。このMODを入れると、ジョブごとに「優先度」を設定でき、機械が空いたときに優先度の高いジョブから先にその機械を使えるようになります。
+AE2の自動クラフトでは、複数のクラフトジョブが同じ機械(圧縮機や溶鉱炉など、Pattern Provider経由で繋がった実機械)を取り合うことがあります。このMODを入れると、ジョブごとに「優先度」を設定でき、機械が空いたときに優先度の高いジョブから先にその機械を使えるようになります。
 
-- 処理中の機械から横取りすることはありません。あくまで「次に空いたときにどちらを優先するか」を制御します
-- ネットワーク全体に対するベストエフォートの調整であり、厳密な保証があるわけではありません
+- 処理中の機械から横取りすることはありません。あくまで「次に空いたときにどちらを優先するか」を制御します。
+- ネットワーク全体に対するベストエフォートの調整であり、厳密な保証があるわけではありません。
 
 ## Requirements / 必要なもの
 
@@ -56,7 +56,7 @@ Priority starts at 0; the higher the number, the higher the priority. It's set f
 
 There are three ways to set it.
 
-優先度は初期値0、数値が高いほど優先されます。設定はAE2純正の「優先度」画面(ストレージバス等と同じ、`+1/+16/+32/+64` ボタンと数値入力欄のある画面)で行います。
+優先度は初期値0、数値が高いほど優先されます。設定はAE2純正の「優先度」画面(ストレージバス等と同じ、`+1/+16/+32/+64` ボタンと数値入力欄がある画面)で行います。
 
 設定方法は3通りあります。
 
@@ -80,7 +80,7 @@ In the CPU list, **only CPUs that are currently running a job (active)** show th
 
 AE2端末のクラフト状況タブで、左側のCPU一覧から対象CPUを選択し、「一時停止」「キャンセル」ボタンの隣に追加されたアイコンボタンを押すと、選択中CPUの優先度画面が開きます(戻るボタンでクラフト状況タブへ戻れます)。
 
-CPU一覧では**ジョブを実行中(アクティブ)のCPUのみ**「CPU #1@1000」のように優先度が名前の後ろに表示されます(アイドル状態のCPUはAE2標準の表示のままです)。
+CPU一覧では**ジョブを実行中(アクティブ)のCPUのみ**「CPU #1@1000」のように優先度が名前の後ろに表示されます。アイドル状態のCPUはAE2標準の表示のままです。
 
 ### Priority auto-reset / 優先度の自動リセット
 
@@ -90,9 +90,9 @@ Priority is a per-job setting. When a crafting task ends (whether completed or c
 
 ## Compatible Addon Mods / 対応アドオンMOD
 
-- **AdvancedAE**: Dedicated compatibility code exists for this version and has been verified at the source level against AdvancedAE `1.6.11-1.21.1`. In-world testing (actual crafting jobs) is still limited.
+- **AdvancedAE**: Dedicated compatibility code exists for this version and has been verified at the source level against AdvancedAE `1.6.11-1.21.1`. The priority UI (including the Quantum Computer's Crafting CPU screen) has also been verified in-game. Functional verification of priority ordering itself during real crafting jobs is still limited.
 
-- **AdvancedAE**: 本バージョン向けの専用対応コードがあり、AdvancedAE `1.6.11-1.21.1` に対してソースレベルでの整合性を確認済みです。ただし実ワールドでのクラフトジョブを伴う動作確認はまだ限定的です。
+- **AdvancedAE**: 本バージョン向けの専用対応コードがあり、AdvancedAE `1.6.11-1.21.1` に対してソースレベルでの整合性を確認済みです。優先度UI(Quantum ComputerのCrafting CPU画面を含む)についても実機での動作を確認しています。実際のクラフトジョブを伴う優先度制御そのものの機能検証はまだ限定的です。
 
 Other addon mods that are confirmed compatible on the 1.20.1 version (Mega Cells, ExtendedAE, Applied Mekanistics) are expected to work the same way here for architectural reasons, but have not yet been verified on 1.21.1.
 
@@ -108,11 +108,11 @@ A public API is provided so other mods can read and write this mod's priority va
 
 - "Complete jobs in priority order as much as possible" is best-effort. Depending on the situation, jobs may not finish exactly in priority order.
 - Priority only has a visible effect **when multiple crafting jobs are competing for the same machine (Pattern Provider)**.
-- This is an early forward-port (alpha). In-world verification (actual crafting jobs, priority ordering under contention) is still limited; only successful build and client/server boot have been confirmed so far.
+- This is a forward-port at beta stage. The priority UI (screens, CPU toolbar integration, AdvancedAE compatibility) has been verified in-game; functional verification of priority ordering under real crafting contention is still ongoing.
 
-- 「できるだけ優先度順に完了させる」はベストエフォートです。状況によっては優先度通りにならないことがあります
-- 優先度の効果は、**複数のクラフトジョブが同じ機械(Pattern Provider)を取り合っている場合のみ**目に見える形で現れます
-- 本バージョンはフォワードポートの初期段階(alpha)です。実ワールドでの検証(実際のクラフトジョブ・優先度制御)はまだ限定的で、現時点ではビルド成功とクライアント/サーバーの起動確認までです
+- 「できるだけ優先度順に完了させる」のはベストエフォートです。状況によっては優先度通りにならないことがあります。
+- 優先度の効果は、**複数のクラフトジョブが同じ機械(Pattern Provider)を取り合っている場合のみ**目に見える形で現れます。
+- 本バージョンはフォワードポートのベータ段階です。優先度UI(画面・CPUツールバーへの統合・AdvancedAEとの互換性)は実機で動作確認済みですが、実際のクラフトジョブでの優先度制御そのものの機能検証は引き続き行っています。
 
 ## Credits / クレジット
 

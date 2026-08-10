@@ -5,29 +5,17 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 import appeng.client.gui.AEBaseScreen;
-import appeng.client.gui.Icon;
 import appeng.client.gui.NumberEntryType;
 import appeng.client.gui.style.ScreenStyle;
-import appeng.client.gui.widgets.IconButton;
 import appeng.client.gui.widgets.NumberEntryWidget;
 
 public class CraftPriorityStepScreen extends AEBaseScreen<CraftPriorityStepMenu> {
 
     private final NumberEntryWidget priority;
-    private final IconButton nextButton;
-    private final IconButton backButton;
 
     public CraftPriorityStepScreen(CraftPriorityStepMenu menu, Inventory playerInventory, Component title,
             ScreenStyle style) {
         super(menu, playerInventory, title, style);
-
-        // NOTE: 以前はここで AESubScreen.addBackButton(menu, "back", widgets) を呼び、
-        // AE2標準のISubMenu用「戻る」タブボタンを流用していたが、そのボタンは
-        // ホスト(クラフトターミナル等)の本来のメインメニューへ戻る挙動
-        // (SwitchGuisPacket.returnToParentMenu())になっており、
-        // このMODのウィザードの前段(数量設定 = CraftAmountMenu)には戻れず、
-        // かつボタンのツールチップがホストのメインメニュー名(例:クラフトターミナル)を
-        // 表示してしまう問題があった。専用のbackButtonに置き換える。
 
         this.priority = widgets.addNumberEntryWidget("priority", NumberEntryType.UNITLESS);
         this.priority.setTextFieldStyle(style.getWidget("priorityInput"));
@@ -35,41 +23,20 @@ public class CraftPriorityStepScreen extends AEBaseScreen<CraftPriorityStepMenu>
         this.priority.setLongValue(menu.getPriorityValue());
         this.priority.setOnConfirm(this::confirm);
 
-        this.nextButton = new IconButton(b -> confirm()) {
-            @Override
-            protected Icon getIcon() {
-                return Icon.ENTER;
-            }
-        };
-        this.nextButton.setMessage(Component.translatable("gui.ae2craftpriority.next"));
-
-        this.backButton = new IconButton(b -> back()) {
-            @Override
-            protected Icon getIcon() {
-                return Icon.BACK;
-            }
-        };
-        this.backButton.setMessage(Component.translatable("gui.ae2craftpriority.back"));
+        // Native AE2 buttons: widgets.addButton(...) constructs an appeng.client.gui.widgets.AE2Button,
+        // which renders using AE2's own texture atlas (ae2:widget/button, ae2:widget/button_highlighted,
+        // ae2:widget/button_disabled) and has built-in auto-scroll overflow handling for labels wider
+        // than the button - unlike a vanilla Button. This replaces the earlier vanilla-Button-based
+        // CompactTextButton shrink-to-fit hack, which never matched AE2's native visual style.
+        // Position and size are resolved automatically from this screen's style JSON ("next"/"cancel"
+        // widget entries in assets/ae2/screens/ae2craftpriority_priority.json) by WidgetContainer.add(...),
+        // so no manual updateBeforeRender() positioning override is needed.
+        widgets.addButton("next", Component.translatable("gui.ae2craftpriority.next"), btn -> confirm());
+        widgets.addButton("cancel", Component.translatable("gui.ae2craftpriority.back"), btn -> back());
 
         setTextContent("priority_insertion_hint",
                 Component.translatable("gui.ae2craftpriority.priority_hint_high"));
         setTextHidden("priority_extraction_hint", true);
-    }
-
-    @Override
-    protected void init() {
-        super.init();
-        addRenderableWidget(this.nextButton);
-        addRenderableWidget(this.backButton);
-    }
-
-    @Override
-    protected void updateBeforeRender() {
-        super.updateBeforeRender();
-        this.nextButton.setX(this.leftPos + this.imageWidth - 4 - this.nextButton.getWidth());
-        this.nextButton.setY(this.topPos + this.imageHeight - 4 - this.nextButton.getHeight());
-        this.backButton.setX(this.leftPos + 4);
-        this.backButton.setY(this.topPos + this.imageHeight - 4 - this.backButton.getHeight());
     }
 
     private void confirm() {

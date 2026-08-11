@@ -1,0 +1,90 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'fabric-loom' version '1.17.19'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    withSourcesJar()
+}
+
+println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+
+loom {
+    // Mojang公式マッピングのライセンス確認プロンプトを非対話環境でも自動承諾する。
+    silentMojangMappingsLicense()
+
+    runs {
+        client {
+            client()
+            runDir "run"
+        }
+        server {
+            server()
+            // clientのrun/と分離する(専用サーバーテストをclientと同時起動する際に
+            // world/logs/mods等が競合しないよう、Forge/NeoForge版と同じ構成に合わせている)。
+            runDir "run/server"
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url = 'https://api.modrinth.com/maven'
+        content {
+            includeGroup 'maven.modrinth'
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+
+    // AE2(および本MODのMixin群)はMojang公式マッピングの識別子をそのまま使用しているため
+    // (Forge版と共通のソース資産、remap = false)、YarnではなくOfficial(Mojang)マッピングを使う。
+    mappings loom.officialMojangMappings()
+
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+
+    // AE2 (Applied Energistics 2) Fabric版。
+    // Modrinth上の表示バージョン番号"15.4.10"はForge版・Fabric版で共用されており
+    // (Modrinthのversion_numberが重複)、Maven座標としてのバージョン番号指定は曖昧になる。
+    // そのため個別のバージョンID(kA3rm9EP = "AE2 15.4.10 [FABRIC]"、
+    // https://modrinth.com/mod/ae2/version/kA3rm9EP )を直接指定する。
+    modImplementation "maven.modrinth:ae2:${ae2_fabric_version_id}"
+
+    // 補足: AdvancedAE・GuideMEはこのFabricターゲットでは依存に含めていない。
+    // - AdvancedAE(net.pedroksl.advanced_ae)は2026-08時点でFabric版が存在しないため、
+    //   Forge版にあった対応Mixin一式(compat/advancedae以下)はFabric版から除外している。
+    // - GuideME(AE2のForge版が要求する必須依存Mod)もFabric版が存在しないが、
+    //   AE2のFabric版配布メタデータ上はGuideMEを必須依存として要求していない
+    //   (Fabric版はガイドブック機能を別方式で提供しているとみられる)ため、対応不要。
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    filteringCharset = 'UTF-8'
+
+    var replaceProperties = [
+            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license,
+            mod_version: mod_version, mod_authors: mod_authors,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['fabric.mod.json']) {
+        expand replaceProperties + [project: project]
+    }
+}

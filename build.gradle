@@ -2,7 +2,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'fabric-loom' version '1.10.5'
+    id 'dev.architectury.loom' version '1.10.455'
 }
 
 version = mod_version
@@ -42,6 +42,14 @@ repositories {
             includeGroup 'maven.modrinth'
         }
     }
+    // Team Reborn Energy API (teamreborn:energy) の配布元。Maven Centralには存在せず、
+    // ModMaven (https://modmaven.dev/) でホストされていることをmvnrepository.comで確認済み。
+    maven {
+        url = 'https://modmaven.dev/'
+        content {
+            includeGroup 'teamreborn'
+        }
+    }
 }
 
 dependencies {
@@ -60,6 +68,12 @@ dependencies {
     // Fabric API。AE2 Fabric版がBlockEntityの一部でRenderAttachmentBlockEntity
     // (rendering-data-attachment-v1)等のFabric API型を使用しているため、コンパイルに必要。
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+
+    // Team Reborn Energy API。AE2 Fabric版がエネルギー相互運用(appeng.items.parts.PartModelsHelper
+    // 経由でAEPartsの初期化時)に必要とする依存。AE2自身のFabricビルド(GitHub tag fabric/v15.4.10)の
+    // gradle.propertiesと同じバージョンに合わせている。実機確認: これが無いとサーバー起動時に
+    // NoClassDefFoundError: team/reborn/energy/api/EnergyStorage でクラッシュする。
+    modImplementation "teamreborn:energy:${tr_energy_version}"
 
     // AE2 (Applied Energistics 2) Fabric版。
     // Modrinth上の表示バージョン番号"15.4.10"はForge版・Fabric版で共用されており

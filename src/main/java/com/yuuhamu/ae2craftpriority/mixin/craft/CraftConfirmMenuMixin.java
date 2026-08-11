@@ -41,7 +41,7 @@ public abstract class CraftConfirmMenuMixin implements PriorityHolder {
     @Redirect(
             method = "goBack",
             at = @At(value = "INVOKE", target = "Lappeng/menu/me/crafting/CraftAmountMenu;"
-                    + "open(Lnet/minecraft/server/level/ServerPlayer;Lappeng/menu/locator/MenuLocator;"
+                    + "open(Lnet/minecraft/class_3222;Lappeng/menu/locator/MenuLocator;"
                     + "Lappeng/api/stacks/AEKey;I)V"))
     private void ae2cp$backToPriorityStep(ServerPlayer player, MenuLocator locator, AEKey whatToCraft, int amount) {
         CraftPriorityStepMenu.open(player, locator, whatToCraft, amount, this.autoStart, this.ae2cp$getPriority());

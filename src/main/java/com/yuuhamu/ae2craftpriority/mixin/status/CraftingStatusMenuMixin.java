@@ -106,7 +106,7 @@ public abstract class CraftingStatusMenuMixin extends CraftingCPUMenu implements
     @Redirect(
             method = "createCpuList",
             at = @At(value = "INVOKE", target = "Lappeng/api/networking/crafting/ICraftingCPU;"
-                    + "getName()Lnet/minecraft/network/chat/Component;"))
+                    + "getName()Lnet/minecraft/class_2561;"))
     private Component ae2cp$appendPriorityToName(ICraftingCPU cpu) {
         Component original = cpu.getName();
         if (!cpu.isBusy()) {

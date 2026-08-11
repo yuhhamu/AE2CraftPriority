@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "package": "com.yuuhamu.ae2craftpriority.mixin",
   "compatibilityLevel": "JAVA_17",
-  "refmap": "ae2craftpriority.refmap.json",
+  "refmap": "ae2craftpriority-refmap.json",
   "mixins": [
     "core.CraftingBlockEntityMixin",
     "core.CraftingCPUClusterMixin",

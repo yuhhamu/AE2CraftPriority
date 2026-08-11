@@ -49,7 +49,11 @@ dependencies {
 
     // AE2(および本MODのMixin群)はMojang公式マッピングの識別子をそのまま使用しているため
     // (Forge版と共通のソース資産、remap = false)、YarnではなくOfficial(Mojang)マッピングを使う。
-    mappings loom.officialMojangMappings()
+    // AE2自身のFabricビルド(GitHub tag fabric/v15.4.10)もloom.layered()で
+    // officialMojangMappingsを使用しているため、同じ形式に合わせる。
+    mappings loom.layered() {
+        officialMojangMappings()
+    }
 
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
 

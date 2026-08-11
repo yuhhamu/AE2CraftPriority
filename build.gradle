@@ -2,7 +2,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'fabric-loom' version '1.17.19'
+    id 'fabric-loom' version '1.10.5'
 }
 
 version = mod_version
@@ -20,9 +20,6 @@ java {
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 
 loom {
-    // Mojang公式マッピングのライセンス確認プロンプトを非対話環境でも自動承諾する。
-    silentMojangMappingsLicense()
-
     runs {
         client {
             client()
@@ -55,6 +52,10 @@ dependencies {
     mappings loom.officialMojangMappings()
 
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+
+    // Fabric API。AE2 Fabric版がBlockEntityの一部でRenderAttachmentBlockEntity
+    // (rendering-data-attachment-v1)等のFabric API型を使用しているため、コンパイルに必要。
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
 
     // AE2 (Applied Energistics 2) Fabric版。
     // Modrinth上の表示バージョン番号"15.4.10"はForge版・Fabric版で共用されており

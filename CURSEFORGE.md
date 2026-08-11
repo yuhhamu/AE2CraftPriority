@@ -4,7 +4,7 @@
 
 ## What does this mod do?
 
-An addon mod that adds per-job **"priority"** to Applied Energistics 2 (AE2)'s auto-crafting. This is a forward-port (Beta) of the Forge/1.20.1 version.
+An addon mod that adds per-job **"priority"** to Applied Energistics 2 (AE2)'s auto-crafting. This is a port (Beta) of the Forge/1.20.1 version, with priority control under real crafting jobs verified working.
 
 In AE2's auto-crafting, multiple crafting jobs can end up competing for the same machine (a compressor, furnace, etc. connected via a Pattern Provider). This mod lets you set a priority per job, so when a machine frees up, the higher-priority job gets to use it first. It never interrupts a machine that's already processing something, and this is a best-effort, network-wide adjustment rather than a strict guarantee.
 
@@ -26,7 +26,6 @@ In AE2's auto-crafting, multiple crafting jobs can end up competing for the same
 - Priority is only visible when multiple crafting jobs are competing for the same machine (Pattern Provider).
 - Fabric API is pinned to 0.88.1+1.20.1; a newer build combined with AE2 15.4.10 will crash at startup.
 - AdvancedAE is not supported, as it has no Fabric build.
-- This is a beta-stage forward-port; human verification of priority ordering under real crafting contention is still ongoing.
 
 ## Credits
 
@@ -46,7 +45,7 @@ Copyright (c) 2026 yuuhamu
 
 ## これは何をするMODですか?
 
-AE2(Applied Energistics 2)の自動クラフトに、ジョブごとの「優先度」を追加するアドオンMODです。Forge/1.20.1版からのフォワードポート(Beta)です。
+AE2(Applied Energistics 2)の自動クラフトに、ジョブごとの「優先度」を追加するアドオンMODです。Forge/1.20.1版の移植版(Beta)で、実際のクラフトジョブでの優先度制御についても動作確認済みです。
 
 AE2の自動クラフトでは、複数のクラフトジョブが同じ機械(圧縮機・溶鉱炉など、Pattern Providerを経由して繋がった実機械)を取り合うことがあります。本MODを導入すると、ジョブごとに優先度を設定でき、機械が空いたときに優先度の高いジョブから先にその機械を使えるようになります。処理中の機械から横取りすることはなく、あくまでネットワーク全体に対するベストエフォートの調整です。
 
@@ -68,7 +67,6 @@ AE2の自動クラフトでは、複数のクラフトジョブが同じ機械(�
 - 優先度の効果は、複数のクラフトジョブが同じ機械(Pattern Provider)を取り合っている場合のみ目に見える形で現れます。
 - Fabric APIは0.88.1+1.20.1に固定しています。AE2 15.4.10と組み合わせてこれより新しいバージョンを使うと起動時にクラッシュします。
 - AdvancedAEはFabric版が存在しないため非対応です。
-- 本バージョンはベータ段階のフォワードポートです。実際のクラフトジョブでの優先度制御そのものの人手による検証は継続中です。
 
 ## クレジット
 

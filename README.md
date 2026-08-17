@@ -8,26 +8,32 @@ AE2(Applied Energistics 2)の自動クラフトに「優先度」を追加する
 
 ## Supported Versions & Support Policy / 対応バージョン・サポートポリシー
 
-| Version | Support |
+| Version / Loader | Support |
 |---|---|
-| [1.20.1](https://github.com/yuhhamu/AE2CraftPriority) (main) | 🟢 Full Support |
-| [1.18.2](https://github.com/yuhhamu/AE2CraftPriority/tree/1.18.2) | 🟡 Bug Fix Only |
-| [1.16.5](https://github.com/yuhhamu/AE2CraftPriority/tree/1.16.5) | 🟡 Bug Fix Only |
-| [1.12.2](https://github.com/yuhhamu/AE2CraftPriority/tree/1.12.2) | 🚧 In Development (not yet released) |
+| [Forge 1.20.1](https://github.com/yuhhamu/AE2CraftPriority) (main) | 🟢 Full Support |
+| [Forge 1.18.2](https://github.com/yuhhamu/AE2CraftPriority/tree/forge/1.18.2) | 🟢 Full Support |
+| [Forge 1.16.5](https://github.com/yuhhamu/AE2CraftPriority/tree/forge/1.16.5) | 🟢 Full Support |
+| [Forge 1.12.2](https://github.com/yuhhamu/AE2CraftPriority/tree/forge/1.12.2) | 🟢 Full Support |
+| [NeoForge 1.21.1](https://github.com/yuhhamu/AE2CraftPriority/tree/neoforge/1.21.1) | 🟢 Full Support |
+| [Fabric 1.20.1](https://github.com/yuhhamu/AE2CraftPriority/tree/fabric/1.20.1) | 🟢 Full Support |
+
+This mod is developed with AI assistance, which makes it practical to develop and maintain multiple versions/loaders in parallel without the usual "pick one version and deprioritize the rest" trade-off that solo human maintainers face. Because of this, **all branches above are treated as Full Support by policy** — new features and bug fixes are intended to land across all of them, not just the newest one.
+
+本MODはAI(Claude)の支援を活用して開発されており、単独の人間メンテナーにありがちな「どれか1バージョンに絞って他を後回しにする」というトレードオフを抱えることなく、複数バージョン・複数Loaderを並行して開発・保守できます。そのため**上記の全ブランチを方針として「Full Support」として扱います** ― 新機能・バグ修正は最新バージョンに限らず、全ブランチへの反映を基本方針とします。
 
 - 🟢 **Full Support**: New features and bug fixes are actively developed.
 - 🟡 **Bug Fix Only**: No new features; only reported bugs are addressed.
-- 🔵 **Legacy Support**: No active maintenance; only critical issues are addressed.
-- 🚧 **In Development**: Work in progress, not yet released.
+- 🔴 **Legacy Support**: No active maintenance; only critical issues are addressed.
+- ⚪ **In Development**: Work in progress, not yet released.
 
 Each version's code lives on a branch of the same name (or `main`). Installation and usage are the same across versions (this README covers `main` = the 1.20.1 version; see each branch's own README for version-specific differences).
 
 - 🟢 **Full Support**: 新機能追加・バグ修正の両方を継続的に行います
 - 🟡 **Bug Fix Only**: 新機能追加は行わず、報告されたバグの修正のみ対応します
-- 🔵 **Legacy Support**: 積極的なメンテナンスは行わず、重大な不具合のみ対応します
-- 🚧 **In Development**: 開発中で、まだリリースされていません
+- 🔴 **Legacy Support**: 積極的なメンテナンスは行わず、重大な不具合のみ対応します
+- ⚪ **In Development**: 開発中で、まだリリースされていません
 
-各バージョンのコードは同名(または`main`)のブランチで管理しています。導入方法・使い方はバージョンによらず共通です(以下は`main`=1.20.1版の内容。他バージョンの差分は各ブランチのREADMEを参照してください)。
+各バージョンのコードは同名(または`main`)のブランチで管理しています。使い方・導入方法はバージョンによらず共通です(以下は`main`=Forge 1.20.1版での内容。他バージョンの差異は各ブランチのREADMEを参照してください)。
 
 ## What Does This Mod Do? / これは何をするMODですか?
 
@@ -36,7 +42,7 @@ In AE2's auto-crafting, multiple crafting jobs can end up competing for the same
 - It never interrupts a machine that's already processing something — it only decides which job goes next once a machine becomes free.
 - This is a best-effort, network-wide adjustment, not a strict guarantee.
 
-AE2の自動クラフトでは、複数のクラフトジョブが同じ機械(圧縮機・溶鉱炉など、Pattern Provider経由で繋がった実機械)を取り合うことがあります。このMODを入れると、ジョブごとに「優先度」を設定でき、機械が空いたときに優先度の高いジョブから先にその機械を使えるようになります。
+AE2の自動クラフトでは、複数のクラフトジョブが同じ機械(圧縮機・かまどなど、Pattern Provider経由で繋がった機械)を取り合うことがあります。このMODを入れると、ジョブごとに「優先度」を設定でき、機械が空いたときに優先度の高いジョブがその機械を先に使えるようになります。
 
 - 処理中の機械から横取りすることはありません。あくまで「次に空いたときにどちらを優先するか」を制御します
 - ネットワーク全体に対するベストエフォートの調整であり、厳密な保証があるわけではありません
@@ -49,7 +55,7 @@ AE2の自動クラフトでは、複数のクラフトジョブが同じ機械(�
 
 This mod includes code that directly relies on AE2's internal implementation (not its public API). Any AE2 build for Minecraft 1.20.1 (15.x series) shares the same internal structure, so versions other than 15.4.10 are likely to work too — but only 15.4.10 has actually been verified to launch. AE2 builds for other Minecraft versions (which use a different internal structure) are not supported. If it doesn't work, try updating AE2 to the latest 15.x release first.
 
-このMODはAE2の内部実装(公開APIではない部分)を直接利用しているコードを含みます。Minecraft 1.20.1向けのAE2(15.x系列)であれば同じ内部構造を使っているため15.4.10以外でも動作する可能性が高いですが、実際に起動確認できているのは15.4.10のみです。他のMinecraftバージョン向けのAE2(内部構造が異なります)には対応していません。動作しない場合は、AE2をできるだけ最新の15.x系列に揃えたうえで再度お試しください。
+このMODはAE2の内部実装(公開APIではなく)を直接利用しているコードを含みます。Minecraft 1.20.1向けのAE2(15.x系)であれば内部構造が共通しているため15.4.10以外でも動作する可能性が高いですが、実際に起動確認できているのは15.4.10のみです。他のMinecraftバージョン向けのAE2(内部構造が異なります)には対応していません。動作しない場合は、AE2をできるだけ新しい15.x系に更新した上で再度お試しください。
 
 ## Installation / 導入方法
 
@@ -60,7 +66,7 @@ This mod includes code that directly relies on AE2's internal implementation (no
 
 1. Forgeをインストールする
 2. Applied Energistics 2 の jar を `mods` フォルダに入れる
-3. このMOD(AE2 Crafting Priority)の jar も `mods` フォルダに入れる
+3. このMOD(AE2 Crafting Priority)の jar を `mods` フォルダに入れる
 4. Minecraftを起動する
 
 ## Usage / 使い方
@@ -69,7 +75,7 @@ Priority starts at 0; the higher the number, the higher the priority. It's set f
 
 There are three ways to set it.
 
-優先度は初期値0、数値が高いほど優先されます。設定はAE2純正の「優先度」画面(ストレージバス等と同じ、`+1/+10/+100/+1000` ボタンと数値入力欄のある画面)で行います。
+優先度は初期値0、数値が大きいほど優先されます。設定はAE2純正の「優先度」画面(ストレージバス等と同じ、`+1/+10/+100/+1000` ボタンと数値入力欄があるもの)で行います。
 
 設定方法は3通りあります。
 
@@ -77,13 +83,13 @@ There are three ways to set it.
 
 The crafting request flow becomes "set amount → **set priority** → select CPU & start." Once you confirm the amount, the priority screen opens; enter a priority and press "Next" to move on to the normal CPU selection/start screen (pressing "Next" without changing anything keeps priority at 0, same as before). The priority you set is applied to whichever Crafting CPU actually ends up being selected.
 
-アイテムのクラフト要求フローが「個数設定 → **優先度設定** → CPU選択・開始」に変わります。個数を確定すると優先度画面が開くので、優先度を入力して「次へ」を押すと通常のCPU選択・開始画面に進みます(そのまま「次へ」を押せば優先度0で従来通りです)。設定した優先度は、開始時に実際に選ばれたCrafting CPUへ適用されます。
+アイテムのクラフト要求フローが「数量設定 → **優先度設定** → CPU選択・開始」に変わります。数量を確定すると優先度画面が開くので、優先度を入力して「次へ」を押すと通常のCPU選択・開始画面に進みます(そのまま「次へ」を押せば優先度0で従来通りです)。設定した優先度は、開始時に実際に選ばれたCrafting CPUへ適用されます。
 
 ### Method 2: Change it from the Crafting CPU screen / 方法2: Crafting CPUの画面から変更する
 
 Right-click a Crafting CPU block to open its screen; a wrench-icon tab button has been added at the top right. Press it to open that CPU's priority screen (the back button returns you to the CPU screen).
 
-Crafting CPUのブロックを右クリックしてCPU画面を開くと、画面右上にレンチアイコンのタブボタンが追加されています。これを押すとそのCPUの優先度画面が開きます(戻るボタンでCPU画面へ戻れます)。
+Crafting CPUのブロックを右クリックしてCPU画面を開くと、画面右上にレンチアイコンのタブボタンが追加されています。これを押すとそのCPUの優先度画面が開きます(戻るボタンでCPU画面へ戻ります)。
 
 ### Method 3: Change it from the terminal's "Crafting Status" tab / 方法3: 端末の「クラフト状況(Crafting Status)」タブから変更する
 
@@ -91,9 +97,9 @@ In an AE2 terminal's Crafting Status tab, select the target CPU from the list on
 
 In the CPU list, **only CPUs that are currently running a job (active)** show their priority after their name, like "CPU #1@1000" (idle CPUs keep AE2's standard display).
 
-AE2端末のクラフト状況タブで、左側のCPU一覧から対象CPUを選択し、「キャンセル」ボタンの左に追加されたレンチアイコンのボタンを押すと、選択中CPUの優先度画面が開きます(戻るボタンでクラフト状況タブへ戻れます)。
+AE2端末のクラフト状況タブで、左側のCPU一覧から対象CPUを選択し、「キャンセル」ボタンの左に追加されたレンチアイコンのボタンを押すと、選択CPUの優先度画面が開きます(戻るボタンでクラフト状況タブへ戻ります)。
 
-CPU一覧では**ジョブを実行中(アクティブ)のCPUのみ**「CPU #1@1000」のように優先度が名前の後ろに表示されます(アイドル状態のCPUはAE2標準の表示のままです)。
+CPU一覧では**ジョブを実行中(アクティブ)のCPUのみ**「CPU #1@1000」のように優先度が名前の後に表示されます(アイドル状態のCPUはAE2標準の表示のままです)。
 
 ### Priority auto-reset / 優先度の自動リセット
 
@@ -112,16 +118,16 @@ The following AE2 addon mods have been confirmed to work alongside this mod with
 - **ExtendedAE**: A standard Pattern Provider extension, so it works as-is.
 - **Applied Mekanistics**: A standard Pattern Provider extension, so it works as-is.
 
-- **AdvancedAE**: Quantum Computer同士の実行順序にも優先度が適用されます(Vanilla CPUとQuantum Computerのどちらを使うかというAdvancedAE自身の選択ロジックには介入しません)
+- **AdvancedAE**: Quantum Computer同士の実行順序にも優先度が適用されます(Vanilla CPUとQuantum Computerのどちらを使うかというAdvancedAE自身の選択ロジックには干渉しません)
 - **Mega Cells**: MEGA Crafting CPUはVanillaのCrafting CPUと同じ仕組みで動作するため、追加設定なしで優先度が適用されます
-- **ExtendedAE**: 標準のPattern Provider拡張のため、そのまま動作します
-- **Applied Mekanistics**: 標準のPattern Provider拡張のため、そのまま動作します
+- **ExtendedAE**: 標準的なPattern Provider拡張のため、そのまま動作します
+- **Applied Mekanistics**: 標準的なPattern Provider拡張のため、そのまま動作します
 
 ## Developer API / 開発者向けAPI
 
 A public API is provided so other mods can read and write this mod's priority values. See the "Developer API" section of [DEVELOPMENT.md](DEVELOPMENT.md) for details.
 
-他のMODから本MODの優先度を読み書きするための公開APIを提供しています。詳細は[DEVELOPMENT.md](DEVELOPMENT.md) の「開発者向けAPI」の項を参照してください。
+他MODから本MODの優先度を読み書きするための公開APIを提供しています。詳細は[DEVELOPMENT.md](DEVELOPMENT.md)の「開発者向けAPI」の項を参照してください。
 
 ## Known Limitations / 既知の制限
 
@@ -129,7 +135,7 @@ A public API is provided so other mods can read and write this mod's priority va
 - Priority only has a visible effect **when multiple crafting jobs are competing for the same machine (Pattern Provider)**. If machines have enough spare capacity that no contention occurs, changing priority won't produce any visible difference — since there's no contention, there's nothing to prioritize between in the first place.
 
 - 「できるだけ優先度順に完了させる」はベストエフォートです。状況によっては優先度通りにならないことがあります
-- 優先度の効果は、**複数のクラフトジョブが同じ機械(Pattern Provider)を取り合っている場合のみ**目に見える形で現れます。機械に十分な余裕があり取り合いが起きていない場合は、優先度を変えても見た目上の違いは出ません(取り合いが発生していないので、そもそも優先順位をつける必要がない状態です)
+- 優先度の効果は、**複数のクラフトジョブが同じ機械(Pattern Provider)を取り合っている場合のみ**目に見える形で現れます。機械に十分な余力があり取り合いが起きていない場合は、優先度を変えても見た目上の違いは出ません(取り合いが発生していないので、そもそも優先順位をつける必要がない状態です)
 
 ## Credits / クレジット
 
@@ -137,7 +143,7 @@ Author: yuuhamu
 Applied Energistics 2 (AE2) is a separate required dependency. This mod does not bundle AE2.
 
 作者: yuuhamu
-Applied Energistics 2 (AE2) は別途必要な依存MODです。このMODはAE2を同梱していません。
+Applied Energistics 2 (AE2) は別途必要な依存MODです。本MODはAE2を同梱していません。
 
 ## License / ライセンス
 
